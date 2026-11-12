@@ -79,6 +79,7 @@ public class HirConverter {
     private final Map<Function, FnSpec> fn2Spec = new HashMap<>();
     private final Map<LocalDefId, GenericParam> localParams = new HashMap<>();
     private final Map<DefId, RFunction> variantConstructors = new HashMap<>();
+    private final Map<HirId, Resolution> resolutions = new HashMap<>();
     private final Map<DefId, ParametricFunctionDecl> parametricVariantConstructors =
         new HashMap<>();
 
@@ -111,6 +112,9 @@ public class HirConverter {
         }
         for (var m : crate.types()) {
             rawTypes.put(m.hirId(), m.ty());
+        }
+        for (var res : crate.res()) {
+            resolutions.put(res.hirId(), res.resolution());
         }
         Crate crate1 = new Crate(convertMod(crate.topMod()));
         for (var fn : fnsToComplete.keySet()) {

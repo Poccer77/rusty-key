@@ -23,7 +23,7 @@ import org.key_project.rusty.speclang.spec.TermStmtKind;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
 
-public record Crate(Mod topMod, HirTyMapping[] types, DefIdAdtMapping[] adts) {
+public record Crate(Mod topMod, HirTyMapping[] types, DefIdAdtMapping[] adts, ResolutionMapping[] res) {
     public static Crate parseJSON(String json) {
         var gson =
             new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
