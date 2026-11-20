@@ -10,6 +10,7 @@ import org.key_project.logic.SyntaxElement;
 import org.key_project.rusty.Services;
 import org.key_project.rusty.ast.PathSegment;
 import org.key_project.rusty.ast.abstraction.Type;
+import org.key_project.rusty.ast.fn.Function;
 import org.key_project.rusty.ast.visitor.Visitor;
 import org.key_project.rusty.logic.op.ProgramFunction;
 import org.key_project.util.collection.ImmutableList;
@@ -21,10 +22,10 @@ public final class MethodCallExpression implements Call {
     private final Expr callee;
     private final PathSegment method;
     private final ImmutableList<Expr> params;
-    private final Optional<Function> resolution;
+    private final @Nullable Function resolution;
 
     public MethodCallExpression(Expr callee, PathSegment method,
-            ImmutableList<Expr> args, Optional<Function> resolution) {
+            ImmutableList<Expr> args, @Nullable Function resolution) {
         this.callee = callee;
         this.method = method;
         this.params = args;

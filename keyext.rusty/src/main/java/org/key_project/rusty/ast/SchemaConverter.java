@@ -276,7 +276,7 @@ public class SchemaConverter {
                 : ImmutableList.fromList(
                     ctx.callParams().expr().stream().map(this::convertExpr).toList());
         return new MethodCallExpression(callee,
-            new PathSegment(seg.segment().ident().toString(), null), params);
+            new PathSegment(seg.segment().ident().toString(), null), params, null);
     }
 
     private FieldExpression convertFieldExpression(

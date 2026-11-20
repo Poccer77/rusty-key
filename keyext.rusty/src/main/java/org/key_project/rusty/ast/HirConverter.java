@@ -4,21 +4,15 @@
  * SPDX-License-Identifier: GPL-2.0-or-later */
 package org.key_project.rusty.ast;
 
-import java.lang.classfile.Label;
 import java.math.BigInteger;
 import java.util.*;
-import java.util.regex.Pattern;
-
-import javax.lang.model.type.PrimitiveType;
-import javax.lang.model.type.ReferenceType;
-import javax.naming.Context;
-import javax.print.attribute.standard.Destination;
 
 import org.key_project.logic.Name;
 import org.key_project.logic.Term;
 import org.key_project.logic.sort.Sort;
 import org.key_project.rusty.Services;
 import org.key_project.rusty.ast.abstraction.*;
+import org.key_project.rusty.ast.abstraction.Enum;
 import org.key_project.rusty.ast.abstraction.GenericEnum;
 import org.key_project.rusty.ast.abstraction.GenericParam;
 import org.key_project.rusty.ast.expr.*;
@@ -39,10 +33,6 @@ import org.key_project.rusty.logic.op.ProgramVariable;
 import org.key_project.rusty.logic.op.RFunction;
 import org.key_project.rusty.logic.sort.*;
 import org.key_project.rusty.parser.hir.*;
-import org.key_project.rusty.parser.hir.DefKind.ConstParam;
-import org.key_project.rusty.parser.hir.DefKind.ExternCrate;
-import org.key_project.rusty.parser.hir.DefKind.Mod;
-import org.key_project.rusty.parser.hir.DefKind.Variant;
 import org.key_project.rusty.parser.hir.expr.*;
 import org.key_project.rusty.parser.hir.hirty.*;
 import org.key_project.rusty.parser.hir.item.Fn;
@@ -56,7 +46,6 @@ import org.key_project.rusty.parser.hir.stmt.LetStmt;
 import org.key_project.rusty.parser.hir.stmt.Stmt;
 import org.key_project.rusty.parser.hir.stmt.StmtKind;
 import org.key_project.rusty.parser.hir.ty.*;
-import org.key_project.rusty.parser.hir.ty.Ty.Adt;
 import org.key_project.rusty.parser.hir.ty.TyConst;
 import org.key_project.rusty.speclang.FnSpecConverter;
 import org.key_project.rusty.speclang.LoopSpecConverter;
@@ -125,7 +114,7 @@ public class HirConverter {
             rawTypes.put(m.hirId(), m.ty());
         }
         for (var res : crate.res()) {
-            resolutions.put(res.hirId(), res.resolution());
+            resolutions.put(res.hirId(), res.res());
         }
         Crate crate1 = new Crate(convertMod(crate.topMod()));
         for (var fn : fnsToComplete.keySet()) {
@@ -197,6 +186,7 @@ public class HirConverter {
             case org.key_project.rusty.parser.hir.item.Struct s -> null; // Handled by ADT
                                                                          // conversion above
             case org.key_project.rusty.parser.hir.item.Const c -> convertConstDef(c);
+            case org.key_project.rusty.parser.hir.item.Impl i -> convertImpl(i);
             default -> throw new IllegalArgumentException("Unknown item: " + item);
         };
     }
@@ -260,7 +250,7 @@ public class HirConverter {
             case ExprKind.ConstBlock e -> convertConstBlockExpr(e);
             case ExprKind.Array e -> convertArrayExpr(e, ty);
             case ExprKind.Call e -> convertCall(e);
-            case ExprKind.MethodCall e -> convertMethodCall(e);
+            case ExprKind.MethodCall e -> convertMethodCall(e, id);
             case ExprKind.Tup e -> convertTupleExpr(e, ty);
             case ExprKind.Binary e -> convertBinary(e);
             case ExprKind.Unary e -> convertUnary(e, ty);
@@ -314,15 +304,15 @@ public class HirConverter {
         return new ArrayExpression(ImmutableList.fromArray(exprs), ty);
     }
 
-    private MethodCallExpression convertMethodCall(ExprKind.MethodCall e) {
+    private MethodCallExpression convertMethodCall(ExprKind.MethodCall e, HirId id) {
         var args = new Expr[e.args().length];
         for (int i = 0; i < e.args().length; i++) {
             args[i] = convertExpr(e.args()[i]);
         }
-        Optional<Function> fn = Optional.of(null);
-        Optional<DefId> res = resolutions.get(e.hirId).DefId;
-        if (res.isPresent() && res.krate == 0) {
-            fn.of(localFns.get(res.get().index()));
+        Function fn = null;
+        DefId res = resolutions.get(id).implDefId();
+        if (res != null && res.krate() == 0) {
+            fn = localFns.get(new LocalDefId(res.index()));
         }
         return new MethodCallExpression(convertExpr(e.callee()), convertPathSegment(e.segment()),
             ImmutableList.fromArray(args), fn);
