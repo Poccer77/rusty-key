@@ -421,8 +421,7 @@ public class ExpressionBuilder extends DefaultBuilder {
             origVars = variables();
             List<QuantifiableVariable> bv = accept(ctx.call().boundVars);
             boundVars =
-                bv != null ? ImmutableList.fromArray(bv.toArray(new QuantifiableVariable[0]))
-                        : null;
+                bv != null ? ImmutableList.fromList(bv) : null;
             args = visitArguments(ctx.call().argument_list());
             if (boundVars != null) {
                 unbindVars(origVars);
@@ -726,7 +725,7 @@ public class ExpressionBuilder extends DefaultBuilder {
         assert vars != null;
         ImmutableList<QuantifiableVariable> bound = ImmutableList.fromList(vars);
         Term a1 = accept(ctx.sub);
-        Term a = getTermFactory().createTerm(op, ImmutableList.singleton(a1),
+        Term a = getTermFactory().createTerm(op, ImmutableList.of(a1),
             bound);
         unbindVars(orig);
         unbindVars(vars);

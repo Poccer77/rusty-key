@@ -200,7 +200,7 @@ public class TestTermParser extends AbstractTestTermParser {
         JTerm inner = tf.createTerm(head, xs); // head(xs)
         JTerm replacement = tf.createTerm(tail, tf.createTerm(thisxs)); // tail(xs)
         JTerm subst = tf.createTerm(WarySubstOp.SUBST, new JTerm[] { replacement, inner },
-            ImmutableList.singleton(thisxs), null);
+            ImmutableList.of(thisxs), null);
 
         assertNotSame(thisxs, xs);
         assertEquals(subst, t);

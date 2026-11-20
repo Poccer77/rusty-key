@@ -54,7 +54,7 @@ public class TermBuilder {
 
     private static final Name CAST_NAME = new Name("cast");
 
-    /// Builds `cast<[sort]>(term)`, reinterpreting `term` as `sort` via the parametric `cast`
+    /// Builds `cast<sort>(term)`, reinterpreting `term` as `sort` via the parametric `cast`
     /// function (see cast.key). Returns `term` unchanged when it already has that sort, or when the
     /// `cast` operator is not declared.
     public Term cast(Sort sort, Term term) {
@@ -121,8 +121,8 @@ public class TermBuilder {
     }
 
     public Term all(QuantifiableVariable qv, Term t) {
-        return tf.createTerm(Quantifier.ALL, ImmutableList.singleton(t),
-            ImmutableList.singleton(qv));
+        return tf.createTerm(Quantifier.ALL, ImmutableList.of(t),
+            ImmutableList.of(qv));
     }
 
     public Term all(Iterable<? extends QuantifiableVariable> qvs, Term t) {
@@ -134,8 +134,8 @@ public class TermBuilder {
     }
 
     public Term ex(QuantifiableVariable qv, Term t) {
-        return tf.createTerm(Quantifier.EX, ImmutableList.singleton(t),
-            ImmutableList.singleton(qv));
+        return tf.createTerm(Quantifier.EX, ImmutableList.of(t),
+            ImmutableList.of(qv));
     }
 
     public Term ex(Iterable<? extends QuantifiableVariable> qvs, Term t) {
@@ -552,8 +552,7 @@ public class TermBuilder {
     /// @param substTerm the Term that replaces substVar
     /// @param origTerm the Term that is substituted
     public Term subst(SubstOp op, QuantifiableVariable substVar, Term substTerm, Term origTerm) {
-        return tf.createTerm(op, ImmutableList.of(substTerm, origTerm),
-            ImmutableList.singleton(substVar));
+        return tf.createTerm(op, ImmutableList.of(substTerm, origTerm), ImmutableList.of(substVar));
     }
 
     /// Creates a program variable for the result. Take care to register it in the namespaces.

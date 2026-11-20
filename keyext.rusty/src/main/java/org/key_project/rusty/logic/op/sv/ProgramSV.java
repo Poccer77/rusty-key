@@ -32,7 +32,7 @@ public final class ProgramSV extends OperatorSV
     private final boolean isListSV;
 
     private static final ImmutableList<RustyProgramElement> EMPTY_LIST_INSTANTIATION =
-        ImmutableList.fromArray(new RustyProgramElement[0]);
+        ImmutableList.of();
 
     /// creates a new SchemaVariable used as a placeholder for program constructs
     ///
@@ -114,8 +114,7 @@ public final class ProgramSV extends OperatorSV
             src = source.getSource();
         }
 
-        return addProgramInstantiation(
-            ImmutableList.fromList(matchedElements), matchCond,
+        return addProgramInstantiation(ImmutableList.fromList(matchedElements), matchCond,
             services);
     }
 
@@ -179,7 +178,7 @@ public final class ProgramSV extends OperatorSV
         }
 
         SVInstantiations insts = matchCond.getInstantiations();
-        final var pl = (ImmutableList<RustyProgramElement>) insts.getInstantiation(this);
+        final var pl = insts.<ImmutableList<RustyProgramElement>>getInstantiation(this);
         if (pl != null) {
             if (pl.equals(list)) {
                 return matchCond;

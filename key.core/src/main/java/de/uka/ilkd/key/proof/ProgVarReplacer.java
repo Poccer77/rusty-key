@@ -98,6 +98,8 @@ public final class ProgVarReplacer {
     /**
      * replaces in an SVInstantiations
      */
+    @SuppressWarnings("unchecked") // the list instantiation's elements are ProgramElement as
+    // checked by list.getType() above
     public SVInstantiations replace(SVInstantiations insts) {
         SVInstantiations result = insts;
 
@@ -143,7 +145,7 @@ public final class ProgVarReplacer {
                 }
 
                 if (changedSomething) {
-                    result = result.replace(sv, ImmutableList.fromArray(array), services);
+                    result = result.replace(sv, ImmutableList.of(array), services);
                 }
             } else {
                 assert false : "unexpected subtype of InstantiationEntry<?>";

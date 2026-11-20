@@ -922,7 +922,7 @@ public class HirConverter {
                         }
                         RFunction ctor =
                             new RFunction(new Name(def.pathStr() + "::" + value.name()), sort,
-                                ImmutableList.fromArray(argSorts), null, true);
+                                ImmutableList.of(argSorts), null, true);
                         variants[e.getKey()] =
                             new Variant(new Name(value.name()),
                                 fields, ctor);

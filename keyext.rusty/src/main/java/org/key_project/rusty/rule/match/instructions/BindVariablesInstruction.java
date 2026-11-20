@@ -11,77 +11,102 @@ import org.key_project.logic.op.QuantifiableVariable;
 import org.key_project.prover.rules.instantiation.MatchResultInfo;
 import org.key_project.prover.rules.matcher.vm.instruction.MatchInstruction;
 import org.key_project.rusty.Services;
+import org.key_project.rusty.logic.LogicVariableTable;
 import org.key_project.rusty.logic.op.BoundVariable;
 import org.key_project.rusty.logic.op.sv.VariableSV;
 import org.key_project.rusty.rule.MatchConditions;
+import org.key_project.util.collection.ImmutableList;
 
-import org.jspecify.annotations.Nullable;
+/// Opens a binding scope for a term with bound variables (a quantifier, a substitution, ...): it
+/// extends the renaming table and matches the pattern's bound variables pairwise against the source
+/// term's own bound variables: a concrete `LogicVariable` in the pattern by consistent
+/// renaming (same sort, same abstract name), a `VariableSV` by instantiating it with the
+/// source variable. The scope is closed again after the term has been matched
+/// (`MatchConditions.shrinkRenameTable()`, called through the `BinderMatcher`).
+public class BindVariablesInstruction implements MatchInstruction {
+    private final VariableBinderSubinstruction[] boundVarBinders;
 
-/// This instruction matches the variable below a binder (e.g. a quantifier).
-public class BindVariablesInstruction {
-    public static MatchInstruction create(QuantifiableVariable var) {
-        if (var instanceof BoundVariable bv) {
-            return new LogicVariableBinder(bv);
-        } else {
-            return new VariableSVBinder((VariableSV) var);
+    public BindVariablesInstruction(ImmutableList<QuantifiableVariable> boundVars) {
+        boundVarBinders = new VariableBinderSubinstruction[boundVars.size()];
+        int i = 0;
+        for (QuantifiableVariable boundVar : boundVars) {
+            if (boundVar instanceof BoundVariable lv) {
+                boundVarBinders[i] = new LogicVariableBinder(lv);
+            } else {
+                boundVarBinders[i] = new VariableSVBinder((VariableSV) boundVar);
+            }
+            i++;
         }
     }
 
+    private interface VariableBinderSubinstruction {
+        MatchConditions match(BoundVariable instantiationCandidate,
+                MatchConditions matchCond, LogicServices services);
+    }
+
     private record LogicVariableBinder(BoundVariable templateVar)
-            implements MatchInstruction {
-        /// a match between two logic variables is possible if they have been assigned they are same
-        /// or have been assigned to the same abstract name and the sorts are equal.
-        private MatchResultInfo match(
-                BoundVariable instantiationCandidate, MatchResultInfo matchCond,
-                LogicServices ignoredServices) {
+            implements VariableBinderSubinstruction {
+        /// Two logic variables match if they are the same variable, or if the consistent renaming
+        /// maps both to the same abstract name and their sorts are equal.
+        public MatchConditions match(BoundVariable instantiationCandidate,
+                MatchConditions matchCond, LogicServices services) {
+            final LogicVariableTable rt = matchCond.logicVariableTable();
+            if (!rt.containsLocally(templateVar) && !rt.containsLocally(instantiationCandidate)) {
+                matchCond = matchCond.extendLogicVarTable(templateVar);
+            }
+
             if (templateVar != instantiationCandidate) {
                 if (instantiationCandidate.sort() != templateVar.sort()) {
                     matchCond = null;
                 }
             }
-            return ((MatchConditions) matchCond).extendLogicVarTable(templateVar);
-        }
-
-        @Override
-        public @Nullable MatchResultInfo match(SyntaxElement actualElement,
-                MatchResultInfo matchConditions, LogicServices services) {
-            if (!(actualElement instanceof BoundVariable bv)) {
-                return null;
-            }
-            return match(bv, matchConditions, services);
+            return matchCond;
         }
     }
 
-
-    private static class VariableSVBinder
-            extends MatchSchemaVariableInstruction {
-
+    private static class VariableSVBinder extends MatchSchemaVariableInstruction
+            implements VariableBinderSubinstruction {
         public VariableSVBinder(VariableSV templateVar) {
             super(templateVar);
         }
 
-        private MatchResultInfo match(
-                BoundVariable instantiationCandidate, MatchResultInfo matchCond,
-                Services services) {
+        @Override
+        public MatchConditions match(BoundVariable instantiationCandidate,
+                MatchConditions matchCond, LogicServices p_services) {
+            final Services services = (Services) p_services;
             final Object foundMapping = matchCond.getInstantiations().getInstantiation(op);
-            var mc = (MatchConditions) matchCond;
-            mc = mc.extendLogicVarTable(instantiationCandidate);
+            matchCond = matchCond.extendLogicVarTable(instantiationCandidate);
             if (foundMapping == null) {
                 final Term substTerm = services.getTermBuilder().var(instantiationCandidate);
-                matchCond = addInstantiation(substTerm, mc, services);
+                return addInstantiation(substTerm, matchCond, services);
             } else if (((Term) foundMapping).op() != instantiationCandidate) {
-                matchCond = null;
+                return null;
+            } else {
+                return matchCond;
             }
-            return matchCond;
         }
 
         @Override
-        public @Nullable MatchResultInfo match(SyntaxElement actualElement,
-                MatchResultInfo matchConditions, LogicServices services) {
-            if (!(actualElement instanceof BoundVariable bv)) {
-                return null;
-            }
-            return match(bv, matchConditions, (Services) services);
+        protected MatchResultInfo match(Term instantiationCandidate,
+                MatchResultInfo matchConditions,
+                LogicServices services) {
+            throw new UnsupportedOperationException();
         }
+    }
+
+    @Override
+    public MatchResultInfo match(SyntaxElement actualElement, MatchResultInfo matchResult,
+            LogicServices services) {
+        MatchConditions matchConditions = (MatchConditions) matchResult;
+        final var variablesToMatchAndBind = ((Term) actualElement).boundVars();
+        if (variablesToMatchAndBind.size() == boundVarBinders.length) {
+            for (int i = 0; i < boundVarBinders.length && matchConditions != null; i++) {
+                // concrete variables must be logic variables
+                final var qVar = (BoundVariable) variablesToMatchAndBind.get(i);
+                matchConditions = boundVarBinders[i].match(qVar, matchConditions, services);
+            }
+            return matchConditions;
+        }
+        return null;
     }
 }

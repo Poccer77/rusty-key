@@ -11,28 +11,31 @@ import org.key_project.prover.sequent.PosInOccurrence;
 import org.key_project.prover.strategy.costbased.MutableState;
 import org.key_project.prover.strategy.costbased.RuleAppCost;
 import org.key_project.prover.strategy.costbased.feature.Feature;
+import org.key_project.prover.strategy.costbased.quantifierHeuristics.TriggerTreatment;
 import org.key_project.prover.strategy.costbased.termProjection.ProjectionToTerm;
 import org.key_project.rusty.Services;
-import org.key_project.rusty.proof.Goal;
 
-import org.jspecify.annotations.NonNull;
 
 /// Feature that returns the number of branches after instantiated the quantifier formula.
 public class InstantiationCost implements Feature {
-    final private ProjectionToTerm<Goal> varInst;
+    final private ProjectionToTerm varInst;
 
-    private InstantiationCost(ProjectionToTerm<Goal> var) {
+    /// how much the prediction is told about the theories
+    private final TriggerTreatment treatment;
+
+    private InstantiationCost(ProjectionToTerm var, TriggerTreatment treatment) {
         varInst = var;
+        this.treatment = treatment;
     }
 
-    public static Feature create(ProjectionToTerm<Goal> varInst) {
-        return new InstantiationCost(varInst);
+    public static Feature create(ProjectionToTerm varInst, TriggerTreatment treatment) {
+        return new InstantiationCost(varInst, treatment);
     }
 
     /// Compute the cost of a RuleApp.
     @Override
-    public <Goal extends ProofGoal<@NonNull Goal>> RuleAppCost computeCost(RuleApp app,
-            PosInOccurrence pos, Goal goal, MutableState mState) {
+    public RuleAppCost computeCost(RuleApp app,
+            PosInOccurrence pos, ProofGoal<?> goal, MutableState mState) {
         assert pos != null : "Projection is only applicable to rules with find";
 
         final Term formula = pos.sequentFormula().formula();
@@ -40,6 +43,6 @@ public class InstantiationCost implements Feature {
             varInst.toTerm(app, pos, (org.key_project.rusty.proof.Goal) goal, mState);
 
         return Instantiation.computeCost(instance, formula, goal.sequent(),
-            (Services) goal.proof().getServices());
+            (Services) goal.proof().getServices(), treatment);
     }
 }

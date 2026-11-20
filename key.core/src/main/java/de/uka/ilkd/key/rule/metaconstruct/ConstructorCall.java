@@ -33,9 +33,10 @@ import org.key_project.util.collection.ImmutableList;
  * to an implict method called <code>&lt;init&gt;</code> that is mainly the constructor but in its
  * normalform.
  */
+@TransformerMeta(name = "#constructorCall")
 public class ConstructorCall extends ProgramTransformer {
 
-    private static final String CONSTRUCTOR_CALL = "constructor-call";
+    private static final String CONSTRUCTOR_CALL = "#constructorCall";
 
     // @ invariant (newObjectSV == null) != (newObjectVar == null);
     private final SchemaVariable newObjectSV;
@@ -53,6 +54,12 @@ public class ConstructorCall extends ProgramTransformer {
         super(name, consRef);
         this.newObjectSV = newObjectSV;
         newObjectVar = null;
+    }
+
+    @Override
+    public ImmutableList<ProgramElement> getArguments() {
+        return newObjectSV == null ? ImmutableList.of(body())
+                : ImmutableList.of((ProgramElement) newObjectSV, body());
     }
 
     /**

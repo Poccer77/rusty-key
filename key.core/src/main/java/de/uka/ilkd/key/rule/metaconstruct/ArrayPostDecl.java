@@ -24,10 +24,11 @@ import org.key_project.util.collection.ImmutableList;
  *
  * @author N/A
  */
+@TransformerMeta(name = "#arrayPostDeclaration")
 public class ArrayPostDecl extends ProgramTransformer {
 
     public ArrayPostDecl(SchemaVariable sv) {
-        super(new Name("array-post-declaration"), (ProgramSV) sv);
+        super(new Name("#arrayPostDeclaration"), (ProgramSV) sv);
     }
 
     @Override
@@ -48,4 +49,9 @@ public class ArrayPostDecl extends ProgramTransformer {
             originalTypeReference.getReferencePrefix(), variable.getKeYJavaType()) };
     }
 
+
+    @Override
+    public ImmutableList<ProgramElement> getArguments() {
+        return ImmutableList.of(body());
+    }
 }

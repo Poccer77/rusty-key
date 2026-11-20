@@ -126,7 +126,7 @@ public class AssumesInstantiator {
         var content =
             (AssumesFormulaInstantiation[]) Array.newInstance(AssumesFormulaInstantiation.class, i);
         System.arraycopy(res, 0, content, 0, i);
-        return ImmutableList.fromArray(content);
+        return ImmutableList.of(content);
     }
 
     /// @return true iff the formula described by the argument has been modified (or introduced)

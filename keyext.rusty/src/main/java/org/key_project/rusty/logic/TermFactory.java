@@ -15,7 +15,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public class TermFactory {
-    private static final ImmutableList<Term> NO_SUBTERMS = ImmutableList.nil();
+    private static final ImmutableList<Term> NO_SUBTERMS = ImmutableList.of();
     private final @Nullable Map<Term, Term> cache;
 
 
@@ -57,7 +57,7 @@ public class TermFactory {
     }
 
     public Term createTerm(Operator op, Term sub) {
-        return createTerm(op, ImmutableList.singleton(sub), null);
+        return createTerm(op, ImmutableList.of(sub), null);
     }
 
     public Term createTerm(Operator op) {
@@ -73,7 +73,7 @@ public class TermFactory {
             return NO_SUBTERMS;
         // Checker framework is imprecise here
         @SuppressWarnings("type.arguments.not.inferred")
-        ImmutableList<Term> terms = ImmutableList.fromArray(subs);
+        ImmutableList<Term> terms = ImmutableList.of(subs);
         return terms;
     }
 

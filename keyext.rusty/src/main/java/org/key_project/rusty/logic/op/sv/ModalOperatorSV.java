@@ -76,7 +76,7 @@ public class ModalOperatorSV extends RModality.RustyModalityKind implements Sche
 
     @Override
     public @NonNull ImmutableList<Sort> argSorts() {
-        return ImmutableList.nil();
+        return ImmutableList.of();
     }
 
     @Override

@@ -7,6 +7,7 @@ package org.key_project.logic.op;
 import org.key_project.logic.Name;
 import org.key_project.logic.sort.Sort;
 import org.key_project.util.collection.ImmutableList;
+import org.key_project.util.collection.ImmutableListArray;
 
 import org.jspecify.annotations.Nullable;
 
@@ -14,18 +15,19 @@ import org.jspecify.annotations.Nullable;
 public abstract class AbstractSortedOperator extends AbstractOperator
         implements SortedOperator {
     private final Sort sort;
-    private final ImmutableList<Sort> argSorts;
+    private final ImmutableListArray<Sort> argSorts;
 
     protected AbstractSortedOperator(Name name, ImmutableList<Sort> argSorts, Sort sort,
             @Nullable ImmutableList<Boolean> whereToBind, Modifier modifier) {
         super(name, argSorts.size(), whereToBind, modifier);
-        this.argSorts = argSorts;
+        this.argSorts = ImmutableList.asArray(argSorts);
         this.sort = sort;
     }
 
     protected AbstractSortedOperator(Name name, Sort[] argSorts, Sort sort, Boolean[] whereToBind,
             Modifier modifier) {
-        this(name, ImmutableList.fromArray(argSorts), sort, ImmutableList.fromArray(whereToBind),
+        this(name, ImmutableList.ofFixedSize(argSorts), sort,
+            ImmutableList.ofFixedSize(whereToBind),
             modifier);
     }
 
@@ -35,11 +37,11 @@ public abstract class AbstractSortedOperator extends AbstractOperator
     }
 
     protected AbstractSortedOperator(Name name, Sort[] argSorts, Sort sort, Modifier modifier) {
-        this(name, ImmutableList.fromArray(argSorts), sort, null, modifier);
+        this(name, ImmutableList.ofFixedSize(argSorts), sort, null, modifier);
     }
 
     protected AbstractSortedOperator(Name name, Sort sort, Modifier modifier) {
-        this(name, ImmutableList.nil(), sort, null, modifier);
+        this(name, ImmutableList.of(), sort, null, modifier);
     }
 
     @Override

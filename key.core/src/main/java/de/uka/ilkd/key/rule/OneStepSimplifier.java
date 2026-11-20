@@ -8,7 +8,6 @@ import java.util.*;
 
 import de.uka.ilkd.key.java.Services;
 import de.uka.ilkd.key.logic.JTerm;
-import de.uka.ilkd.key.logic.TermServices;
 import de.uka.ilkd.key.logic.label.TermLabel;
 import de.uka.ilkd.key.logic.label.TermLabelManager;
 import de.uka.ilkd.key.logic.label.TermLabelState;
@@ -28,6 +27,7 @@ import de.uka.ilkd.key.settings.ProofSettings;
 import de.uka.ilkd.key.strategy.StrategyProperties;
 import de.uka.ilkd.key.util.MiscTools;
 
+import org.key_project.logic.LogicServices;
 import org.key_project.logic.Name;
 import org.key_project.logic.PosInTerm;
 import org.key_project.logic.Term;
@@ -77,13 +77,14 @@ public final class OneStepSimplifier implements BuiltInRule {
      * "evaluate_instanceof"; in any case there was a measurable slowdown. -- DB 03/06/14
      */
     private static final ImmutableList<String> ruleSets = ImmutableList.<String>nil()
-            .append("concrete").append("simplify_select_elim_store").append("concrete_java")
+            .append("concrete").append("seqConcrete").append("simplify_select_elim_store")
+            .append("concrete_java")
             .append("update_elim")
             .append("update_apply_on_update")
             .append("update_apply").append("update_join").append("elimQuantifier");
 
     private static final boolean[] bottomUp =
-        { false, false, false, false, true, true, true, false };
+        { false, false, false, false, false, true, true, true, false };
 
     /**
      * Whether a formula can be simplified, by formula. A pure fact for one proof, so all workers
@@ -203,7 +204,8 @@ public final class OneStepSimplifier implements BuiltInRule {
     }
 
     /** Fresh, empty not-simplifiable caches, one per rule set. */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" }) // raw GenerationalCache[] array creation +
+                                                   // unchecked cast
     private static GenerationalCache<JTerm, JTerm>[] newNotSimplifiableCaches() {
         final GenerationalCache<JTerm, JTerm>[] caches =
             (GenerationalCache<JTerm, JTerm>[]) new GenerationalCache[ruleSets.size()];
@@ -303,7 +305,7 @@ public final class OneStepSimplifier implements BuiltInRule {
                 protocol.add(app);
             }
             return result;
-            // TODO Idea: return new Pair<TacletApp, SequentFormula>(null, null);
+            // TODO Idea: return new Pair<ITacletApp, SequentFormula>(null, null);
         }
         return null;
     }
@@ -638,6 +640,7 @@ public final class OneStepSimplifier implements BuiltInRule {
     }
 
     @Override
+    @SuppressWarnings("unchecked") // assumesInsts() returns a raw ImmutableList
     public @NonNull ImmutableList<Goal> apply(Goal goal, RuleApp ruleApp) {
 
         assert ruleApp instanceof OneStepSimplifierRuleApp
@@ -767,7 +770,7 @@ public final class OneStepSimplifier implements BuiltInRule {
     }
 
     @Override
-    public OneStepSimplifierRuleApp createApp(PosInOccurrence pos, TermServices services) {
+    public OneStepSimplifierRuleApp createApp(PosInOccurrence pos, LogicServices services) {
         return new OneStepSimplifierRuleApp(this, pos);
     }
 
@@ -864,6 +867,6 @@ public final class OneStepSimplifier implements BuiltInRule {
                   update_apply,
                   update_join,
                   elimQuantifier
-                  """;
+                """;
     }
 }

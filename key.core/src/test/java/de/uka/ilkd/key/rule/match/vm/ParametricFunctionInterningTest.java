@@ -60,7 +60,7 @@ public class ParametricFunctionInterningTest {
                 new GenericSort(new Name(name + "_P" + i)),
                 GenericParameter.Variance.INVARIANT));
         }
-        return new ParametricFunctionDecl(new Name(name), params, ImmutableList.nil(),
+        return new ParametricFunctionDecl(new Name(name), params, ImmutableList.of(),
             concrete, null, false, true, false);
     }
 

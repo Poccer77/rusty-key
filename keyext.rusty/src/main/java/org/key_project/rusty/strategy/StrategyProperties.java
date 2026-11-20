@@ -44,6 +44,17 @@ public final class StrategyProperties extends Properties {
         "QUANTIFIERS_NON_SPLITTING_WITH_PROGS";
     public static final String QUANTIFIERS_INSTANTIATE = "QUANTIFIERS_INSTANTIATE";
 
+    /// The quantifier instantiation treatment. [#TRIGGERS_BEST] and [#TRIGGERS_GOOD]
+    /// both select triggers with knowledge of the heap and of array reads, and order tied
+    /// candidates, `BEST` by their connection to the sequent, `GOOD` more cheaply. Only
+    /// `BEST` matches a trigger against reads over another heap, which is how a property
+    /// established before a method call is used after it. [#TRIGGERS_CLASSIC] selects with
+    /// equality and integer knowledge only and does not order candidates.
+    public static final String TRIGGERS_OPTIONS_KEY = "TRIGGERS_OPTIONS_KEY";
+    public static final String TRIGGERS_BEST = "TRIGGERS_BEST";
+    public static final String TRIGGERS_GOOD = "TRIGGERS_GOOD";
+    public static final String TRIGGERS_CLASSIC = "TRIGGERS_CLASSIC";
+
     public static final String AUTO_INDUCTION_OPTIONS_KEY = "AUTO_INDUCTION_OPTIONS_KEY";
     public static final String AUTO_INDUCTION_OFF = "AUTO_INDUCTION_OFF";
     public static final String AUTO_INDUCTION_RESTRICTED = "AUTO_INDUCTION_RESTRICTED";
@@ -70,7 +81,8 @@ public final class StrategyProperties extends Properties {
         NON_LIN_ARITH_OPTIONS_KEY, NON_LIN_ARITH_NONE, NON_LIN_ARITH_DEF_OPS,
         NON_LIN_ARITH_COMPLETION, QUANTIFIERS_OPTIONS_KEY,
         QUANTIFIERS_NONE, QUANTIFIERS_NON_SPLITTING, QUANTIFIERS_NON_SPLITTING_WITH_PROGS,
-        QUANTIFIERS_INSTANTIATE, AUTO_INDUCTION_OPTIONS_KEY,
+        QUANTIFIERS_INSTANTIATE, TRIGGERS_OPTIONS_KEY, TRIGGERS_BEST, TRIGGERS_GOOD,
+        TRIGGERS_CLASSIC, AUTO_INDUCTION_OPTIONS_KEY,
         AUTO_INDUCTION_OFF, AUTO_INDUCTION_RESTRICTED, AUTO_INDUCTION_ON, AUTO_INDUCTION_LEMMA_ON,
         USER_TACLETS_OPTIONS_KEY_BASE, USER_TACLETS_OFF, USER_TACLETS_LOW, USER_TACLETS_HIGH,
         userTacletsOptionsKey(1), userTacletsOptionsKey(2), userTacletsOptionsKey(3),
@@ -85,6 +97,7 @@ public final class StrategyProperties extends Properties {
         DEFAULT_MAP.setProperty(FUNCTION_OPTIONS_KEY, FUNCTION_CONTRACT);
         DEFAULT_MAP.setProperty(NON_LIN_ARITH_OPTIONS_KEY, NON_LIN_ARITH_NONE);
         DEFAULT_MAP.setProperty(QUANTIFIERS_OPTIONS_KEY, QUANTIFIERS_NON_SPLITTING_WITH_PROGS);
+        DEFAULT_MAP.setProperty(TRIGGERS_OPTIONS_KEY, TRIGGERS_BEST);
         for (int i = 1; i <= USER_TACLETS_NUM; ++i) {
             DEFAULT_MAP.setProperty(userTacletsOptionsKey(i), USER_TACLETS_OFF);
         }
@@ -98,6 +111,7 @@ public final class StrategyProperties extends Properties {
         put(FUNCTION_OPTIONS_KEY, DEFAULT_MAP.get(FUNCTION_OPTIONS_KEY));
         put(NON_LIN_ARITH_OPTIONS_KEY, DEFAULT_MAP.get(NON_LIN_ARITH_OPTIONS_KEY));
         put(QUANTIFIERS_OPTIONS_KEY, DEFAULT_MAP.get(QUANTIFIERS_OPTIONS_KEY));
+        put(TRIGGERS_OPTIONS_KEY, DEFAULT_MAP.get(TRIGGERS_OPTIONS_KEY));
         for (int i = 1; i <= USER_TACLETS_NUM; ++i) {
             put(userTacletsOptionsKey(i), DEFAULT_MAP.get(userTacletsOptionsKey(i)));
         }

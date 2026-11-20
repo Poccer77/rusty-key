@@ -34,7 +34,7 @@ public class Transformer extends JFunction {
     }
 
     public Transformer(Name name, Sort argSort) {
-        this(name, JavaDLTheory.FORMULA, ImmutableList.singleton(argSort));
+        this(name, JavaDLTheory.FORMULA, ImmutableList.of(argSort));
     }
 
     /**

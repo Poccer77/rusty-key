@@ -39,6 +39,7 @@ import org.key_project.util.collection.ImmutableList;
  *
  * @author N/A
  */
+@TransformerMeta(name = "#evaluateArguments")
 public class EvaluateArgs extends ProgramTransformer {
 
     /**
@@ -47,7 +48,7 @@ public class EvaluateArgs extends ProgramTransformer {
      * @param pe the instance of expression contained by the meta construct
      */
     public EvaluateArgs(ProgramElement pe) {
-        super("#evaluate-arguments", pe);
+        super("#evaluateArguments", pe);
     }
 
     /**
@@ -80,7 +81,7 @@ public class EvaluateArgs extends ProgramTransformer {
         final ExecutionContext ec = svInst.getExecutionContext();
 
         MethodOrConstructorReference mr = (MethodOrConstructorReference) //
-        (pe instanceof Assignment a && JavaAstUtils.isCopyAssignment(a) ? a.getChildAt(1) : pe);
+        (pe instanceof Assignment<?> a && JavaAstUtils.isCopyAssignment(a) ? a.getChildAt(1) : pe);
 
         List<Statement> evalstat = new LinkedList<>();
 
@@ -122,7 +123,7 @@ public class EvaluateArgs extends ProgramTransformer {
             resMR = null;
         }
 
-        if (pe instanceof Assignment a && JavaAstUtils.isCopyAssignment(a)) {
+        if (pe instanceof Assignment<?> a && JavaAstUtils.isCopyAssignment(a)) {
             res[res.length - 1] = KeYJavaASTFactory.assign(a.getExpressionAt(0),
                 (Expression) resMR);
         } else {
@@ -130,5 +131,10 @@ public class EvaluateArgs extends ProgramTransformer {
         }
 
         return new ProgramElement[] { KeYJavaASTFactory.block(res) };
+    }
+
+    @Override
+    public ImmutableList<ProgramElement> getArguments() {
+        return ImmutableList.of(body());
     }
 }

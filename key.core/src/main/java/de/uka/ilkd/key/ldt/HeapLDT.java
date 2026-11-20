@@ -262,7 +262,7 @@ public final class HeapLDT extends LDT {
     public @NonNull ParametricFunctionInstance getFinal(@NonNull Sort instanceSort,
             @NonNull Services services) {
         return ParametricFunctionInstance.get(finalFunction,
-            ImmutableList.of(new GenericArgument(instanceSort)), (Services) services);
+            ImmutableList.of(new GenericArgument(instanceSort)), services);
     }
 
     /**
@@ -477,11 +477,11 @@ public final class HeapLDT extends LDT {
                                     .contains(fieldPV.getProgramElementName().getProgramName())) {
                         result = new ObserverFunction(kind.toString(), JavaDLTheory.FORMULA,
                             null, targetSort(), fieldPV.getContainerType(),
-                            fieldPV.isStatic(), ImmutableList.nil(), heapCount, 1);
+                            fieldPV.isStatic(), ImmutableList.of(), heapCount, 1);
                     } else {
                         result = new ObserverFunction(kind.toString(), fieldPV.sort(),
                             fieldPV.getKeYJavaType(), targetSort(), fieldPV.getContainerType(),
-                            fieldPV.isStatic(), ImmutableList.nil(), heapCount, 1);
+                            fieldPV.isStatic(), ImmutableList.of(), heapCount, 1);
                     }
                 } else {
                     result = new JFunction(name, fieldSort, new Sort[0], null, true);

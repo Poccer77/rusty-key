@@ -6,6 +6,7 @@ package org.key_project.rusty.rule;
 
 import java.util.*;
 
+import org.key_project.logic.LogicServices;
 import org.key_project.logic.Name;
 import org.key_project.logic.Namespace;
 import org.key_project.logic.Term;
@@ -14,12 +15,11 @@ import org.key_project.logic.op.QuantifiableVariable;
 import org.key_project.logic.op.sv.OperatorSV;
 import org.key_project.logic.op.sv.SchemaVariable;
 import org.key_project.logic.sort.Sort;
-import org.key_project.prover.proof.ProofGoal;
+import org.key_project.prover.rules.ITacletApp;
 import org.key_project.prover.rules.Taclet;
 import org.key_project.prover.rules.instantiation.*;
 import org.key_project.prover.rules.instantiation.MatchResultInfo;
 import org.key_project.prover.sequent.*;
-import org.key_project.prover.strategy.costbased.appcontainer.RuleAppContainer;
 import org.key_project.rusty.Services;
 import org.key_project.rusty.ast.RustyProgramElement;
 import org.key_project.rusty.ast.abstraction.KeYRustyType;
@@ -31,6 +31,7 @@ import org.key_project.rusty.logic.op.LogicVariable;
 import org.key_project.rusty.logic.op.ProgramVariable;
 import org.key_project.rusty.logic.op.RFunction;
 import org.key_project.rusty.logic.op.sv.*;
+import org.key_project.rusty.logic.sort.GenericSort;
 import org.key_project.rusty.logic.sort.ProgramSVSort;
 import org.key_project.rusty.proof.Goal;
 import org.key_project.rusty.proof.VariableNameProposer;
@@ -44,7 +45,7 @@ import org.jspecify.annotations.Nullable;
 import static org.key_project.logic.op.Function.FunctionKind.DEFINITIONAL_SKOLEM;
 import static org.key_project.logic.op.Function.FunctionKind.SKOLEM;
 
-public abstract class TacletApp implements RuleApp {
+public abstract class TacletApp implements ITacletApp {
     /// the taclet for which the application information is collected
     private final @NonNull Taclet taclet;
 
@@ -63,6 +64,8 @@ public abstract class TacletApp implements RuleApp {
 
     /// the update context given by the current instantiations must not be changed
     protected boolean updateContextFixed = false;
+
+    private volatile ImmutableSet<GenericSort> missingSorts = null;
 
     /// constructs a TacletApp for the given taclet, with an empty instantiation map
     TacletApp(Taclet taclet) {
@@ -146,13 +149,12 @@ public abstract class TacletApp implements RuleApp {
         return result;
     }
 
-    /**
-     * collects all bound variables above the occurrence of the schemavariable whose prefix is given
-     *
-     * @param prefix the TacletPrefix of the schemavariable
-     * @param pos the posInOccurrence describing the position of the schemavariable
-     * @return set of the bound variables
-     */
+    /// collects all bound variables above the occurrence of the schemavariable whose prefix is
+    /// given
+    ///
+    /// @param prefix the TacletPrefix of the schemavariable
+    /// @param pos the posInOccurrence describing the position of the schemavariable
+    /// @return set of the bound variables
     protected static boolean boundAtOccurrenceSet(TacletPrefix prefix,
             @Nullable PosInOccurrence pos,
             ImmutableSet<? extends QuantifiableVariable> freeVars) {
@@ -393,7 +395,7 @@ public abstract class TacletApp implements RuleApp {
         while (svIt.hasNext()) {
             final SchemaVariable sv = svIt.next();
             if (sv instanceof SkolemTermSV) {
-                final Term inst = (Term) insts.getInstantiation(sv);
+                final Term inst = insts.getInstantiation(sv);
 
                 // skolem constant might already be registered in
                 // case it is used in the \addrules() section of a rule
@@ -419,9 +421,8 @@ public abstract class TacletApp implements RuleApp {
     }
 
     /// @return A TacletApp with this.sufficientlyComplete() or null
-    public final @Nullable TacletApp tryToInstantiate(Goal goal) {
-        final var services = goal.getOverlayServices();
-        TacletApp app = instantiationHelper(true, goal);
+    public final @Nullable TacletApp tryToInstantiate(Services services) {
+        TacletApp app = instantiationHelper(true, services);
         if (app == null)
             return null;
 
@@ -435,14 +436,13 @@ public abstract class TacletApp implements RuleApp {
             }
         }
 
-        if (!app.complete()) {
+        if (!app.completeExceptSkolemConstants()) {
             return null;
         }
         return app;
     }
 
-    private TacletApp instantiationHelper(boolean force, Goal goal) {
-        final var services = goal.getOverlayServices();
+    private TacletApp instantiationHelper(boolean force, Services services) {
         final VariableNamer varNamer = services.getVariableNamer();
 
         TacletApp app = this;
@@ -471,13 +471,6 @@ public abstract class TacletApp implements RuleApp {
                 if (app == null) {
                     return null;
                 }
-
-                String proposal = VariableNameProposer.DEFAULT.getProposal(app, operatorSv,
-                    services, null, proposals);
-
-                proposals = proposals.append(proposal);
-
-                app = app.createSkolemConstant(proposal, operatorSv, true, goal);
             } else if (operatorSv instanceof VariableSV) {
                 // if the sort of the schema variable is generic,
                 // ensure that it is instantiated
@@ -511,7 +504,48 @@ public abstract class TacletApp implements RuleApp {
         return app;
     }
 
+    /// Whether this application can be applied: like [#complete()], except skolem term
+    /// schema variables, whose constants [#createSkolemConstants(Goal)] creates when the
+    /// rule is applied.
+    public final boolean completeExceptSkolemConstants() {
+        if (posInOccurrence() == null && !(taclet instanceof NoFindTaclet)) {
+            return false;
+        }
+        if (!uninstantiatedGenericSorts().isEmpty() || !assumesInstantionsComplete()) {
+            return false;
+        }
+        for (final SchemaVariable sv : uninstantiatedVars()) {
+            if (!(sv instanceof SkolemTermSV)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// returns the generic sorts that have not yet been instantiated and need to be instantiated to
+    /// apply the Taclet. (These are not all sorts like the one that appear only in the
+    /// addrule sections)
     ///
+    /// @return ImmutableSet<GenericSort> with GenericSorts that have not been instantiated yet
+    public @NonNull ImmutableSet<GenericSort> uninstantiatedGenericSorts() {
+        return calculateNonInstantiatedGenericSorts();
+    }
+
+    /// calculate needed GenericSorts that have not been instantiated yet. This means to ignore
+    /// GenericSorts that appear only in addrule-sections of Taclets
+    ///
+    /// @return ImmutableSet<genericsort> that need to be instantiated but are not</genericsort>
+    protected ImmutableSet<GenericSort> calculateNonInstantiatedGenericSorts() {
+        if (missingSorts == null) {
+            var coll =
+                new UninstantiatedGenericSortCollector(instantiations());
+            coll.visitWithoutAddrule(taclet());
+            missingSorts = Immutables.createSetFrom(coll.getSortList());
+        }
+
+        return missingSorts;
+    }
+
     /// Collect names which would result in a clash for a new logical variable.
     ///
     ///
@@ -748,6 +782,13 @@ public abstract class TacletApp implements RuleApp {
         return list.size() == (antec.size() + succ.size());
     }
 
+    @Override
+    public @NonNull ITacletApp addCheckedInstantiation(SchemaVariable sv, Term term,
+            LogicServices services,
+            boolean interesting) {
+        return addCheckedInstantiation(sv, term, (Services) services, interesting);
+    }
+
     /// creates a new Tacletapp where the SchemaVariable sv is instantiated with the given term.
     /// Sort equality is checked. If the check fails an IllegalArgumentException is thrown.
     ///
@@ -899,9 +940,20 @@ public abstract class TacletApp implements RuleApp {
         return !(sv instanceof SkolemTermSV || sv instanceof VariableSV);
     }
 
-    @Override
-    public <G extends ProofGoal<G>> RuleAppContainer createRuleAppContainer(PosInOccurrence pos,
-            ProofGoal<G> goal, boolean initial) {
-        throw new UnsupportedOperationException("Not supported for taclet app " + getClass());
+    /// Creates the skolem constants of the still uninstantiated skolem term schema variables.
+    /// Called when the rule is applied, on the goal it is applied to, so every constant records
+    /// the point of its introduction.
+    public TacletApp createSkolemConstants(Goal goal) {
+        TacletApp app = this;
+        ImmutableList<String> proposals = ImmutableList.nil();
+        for (final SchemaVariable sv : uninstantiatedVars()) {
+            if (sv instanceof SkolemTermSV skolemSV) {
+                final String proposal = VariableNameProposer.DEFAULT.getProposal(app, skolemSV,
+                    goal.getOverlayServices(), null, proposals);
+                proposals = proposals.append(proposal);
+                app = app.createSkolemConstant(proposal, skolemSV, true, goal);
+            }
+        }
+        return app;
     }
 }

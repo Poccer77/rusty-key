@@ -49,6 +49,9 @@ public class FunctionPredicateBuilder extends DefaultBuilder {
     }
 
     @Override
+    @SuppressWarnings("unchecked") // mapMapOf's parameterized varargs (List<? extends
+    // RuleContext>...) trigger a generic-array-creation warning that cannot be silenced at the
+    // helper (protected, non-final => no @SafeVarargs)
     public Object visitDecls(JavaKeYParser.DeclsContext ctx) {
         mapMapOf(ctx.pred_decls(), ctx.func_decls(), ctx.transform_decls(), ctx.datatype_decls());
         return null;
@@ -118,7 +121,7 @@ public class FunctionPredicateBuilder extends DefaultBuilder {
                     dtFnNamespace.add(fn);
                 } else {
                     var fn = new ParametricFunctionDecl(new Name(argName), genericParams,
-                        ImmutableList.singleton(sort), argSort, null, false, true, false);
+                        ImmutableList.of(sort), argSort, null, false, true, false);
                     dtPfnNamespace.add(fn);
                 }
             }
@@ -127,9 +130,8 @@ public class FunctionPredicateBuilder extends DefaultBuilder {
                 functions().addSafely(fn);
                 docsSpace().setDocumentation(fn, doc);
             } else {
-                var fn =
-                    new ParametricFunctionDecl(name, genericParams, ImmutableList.fromArray(args),
-                        sort, null, true, true, false);
+                var fn = new ParametricFunctionDecl(name, genericParams, ImmutableList.of(args),
+                    sort, null, true, true, false);
                 namespaces().parametricFunctions().add(fn);
                 docsSpace().setDocumentation(fn, doc);
             }
@@ -176,7 +178,7 @@ public class FunctionPredicateBuilder extends DefaultBuilder {
             var d = new ParametricFunctionDecl(name, ImmutableList.fromList(params),
                 ImmutableList.fromList(argSorts),
                 JavaDLTheory.FORMULA,
-                whereToBind == null ? null : ImmutableList.fromArray(whereToBind1), false, true,
+                whereToBind == null ? null : ImmutableList.of(whereToBind1), false, true,
                 false);
             nss.parametricFunctions().addSafely(d);
             return null;
@@ -227,7 +229,7 @@ public class FunctionPredicateBuilder extends DefaultBuilder {
             }
             var d = new ParametricFunctionDecl(name, ImmutableList.fromList(params),
                 ImmutableList.fromList(argSorts),
-                retSort, whereToBind == null ? null : ImmutableList.fromArray(whereToBind1),
+                retSort, whereToBind == null ? null : ImmutableList.of(whereToBind1),
                 unique, true, false);
             nss.parametricFunctions().add(d);
             return null;

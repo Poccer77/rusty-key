@@ -86,8 +86,8 @@ public class JFunction extends Function implements Sorted, Operator {
 
     public JFunction(Name name, Sort sort, Sort[] argSorts, Boolean[] whereToBind,
             boolean unique) {
-        this(name, sort, ImmutableList.fromArray(argSorts),
-            whereToBind == null ? null : ImmutableList.fromArray(whereToBind), unique);
+        this(name, sort, ImmutableList.of(argSorts),
+            whereToBind == null ? null : ImmutableList.of(whereToBind), unique);
     }
 
     JFunction(Name name, Sort sort, ImmutableList<Sort> argSorts, boolean isRigid) {
@@ -103,18 +103,18 @@ public class JFunction extends Function implements Sorted, Operator {
     }
 
     public JFunction(Name name, Sort sort) {
-        this(name, sort, ImmutableList.nil(), null, false);
+        this(name, sort, ImmutableList.of(), null, false);
     }
 
     /**
      * Creates a constant of the given kind
      */
     public JFunction(Name name, Sort sort, FunctionKind kind) {
-        this(name, sort, ImmutableList.nil(), null, false, true, kind, UNRECORDED);
+        this(name, sort, ImmutableList.of(), null, false, true, kind, UNRECORDED);
     }
 
     public JFunction(Name name, Sort sort, FunctionKind kind, int introductionTime) {
-        this(name, sort, ImmutableList.nil(), null, false, true, kind, introductionTime);
+        this(name, sort, ImmutableList.of(), null, false, true, kind, introductionTime);
     }
 
     /**

@@ -22,7 +22,6 @@ import org.key_project.util.collection.ImmutableList;
 ///
 /// Keys: Long Values: {@code IList<AssumesFormulaInstantiation>}
 public class AssumesInstantiationCachePool<Node> {
-
     /// Capacity of the per-proof, `Node`-keyed cache of assumes-instantiation results.
     ///
     /// The cached value is a pure function of `(node, antec, age)` (the formulas modified
@@ -67,7 +66,6 @@ public class AssumesInstantiationCachePool<Node> {
     }
 
     public static class AssumesInstantiationCache {
-
         private final HashMap<Long, ImmutableList<AssumesFormulaInstantiation>> antecCache =
             new LinkedHashMap<>();
         private final HashMap<Long, ImmutableList<AssumesFormulaInstantiation>> succCache =

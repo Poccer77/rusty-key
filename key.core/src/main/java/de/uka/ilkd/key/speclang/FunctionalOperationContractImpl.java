@@ -973,7 +973,7 @@ public class FunctionalOperationContractImpl implements FunctionalOperationContr
         for (LocationVariable arg : originalParamVars) {
             args[i++] = arg;
         }
-        final MethodReference mr = new MethodReference(ImmutableList.fromArray(args),
+        final MethodReference mr = new MethodReference(ImmutableList.of(args),
             pm.getProgramElementName(), originalSelfVar);
         final Statement callStatement;
         if (originalResultVar == null) {
