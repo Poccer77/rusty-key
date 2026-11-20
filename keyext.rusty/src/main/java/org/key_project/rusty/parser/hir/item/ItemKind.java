@@ -19,6 +19,7 @@ public sealed interface ItemKind permits Const, Enum, ExternCrate, Fn, Struct, U
                 case "Const" -> Const.class;
                 case "Struct" -> Struct.class;
                 case "Enum" -> Enum.class;
+                case "Impl" -> Impl.class;
                 default -> null;
             };
         }

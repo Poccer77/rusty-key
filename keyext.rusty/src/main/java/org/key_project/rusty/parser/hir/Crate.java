@@ -8,6 +8,7 @@ import org.key_project.rusty.parser.hir.expr.*;
 import org.key_project.rusty.parser.hir.hirty.HirTyKind;
 import org.key_project.rusty.parser.hir.hirty.PrimHirTy;
 import org.key_project.rusty.parser.hir.item.FnRetTy;
+import org.key_project.rusty.parser.hir.item.ImplItemKind;
 import org.key_project.rusty.parser.hir.item.ItemKind;
 import org.key_project.rusty.parser.hir.item.Use;
 import org.key_project.rusty.parser.hir.item.VariantData;
@@ -76,6 +77,7 @@ public record Crate(Mod topMod, HirTyMapping[] types, DefIdAdtMapping[] adts, Re
                     .registerTypeAdapter(ExistentialPredicate.class,
                         new ExistentialPredicate.Adapter())
                     .registerTypeAdapter(TyTerm.class, new TyTerm.Adapter())
+                    .registerTypeAdapter(ImplItemKind.class, new ImplItemKind.Adapter())
                     .create();
         return gson.fromJson(json, Crate.class);
     }
