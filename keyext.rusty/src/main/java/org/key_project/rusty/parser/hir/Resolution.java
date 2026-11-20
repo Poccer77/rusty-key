@@ -1,5 +1,5 @@
 package org.key_project.rusty.parser.hir;
 
-public record Resolution() {
+public record Resolution(DefId defId, DefKind defKind) {
 
 }

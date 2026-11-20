@@ -21,12 +21,14 @@ public final class MethodCallExpression implements Call {
     private final Expr callee;
     private final PathSegment method;
     private final ImmutableList<Expr> params;
+    private final Optional<Function> resolution;
 
     public MethodCallExpression(Expr callee, PathSegment method,
-            ImmutableList<Expr> args) {
+            ImmutableList<Expr> args, Optional<Function> resolution) {
         this.callee = callee;
         this.method = method;
         this.params = args;
+        this.resolution = resolution;
     }
 
     @Override
