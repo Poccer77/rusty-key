@@ -219,6 +219,23 @@ public class HirConverter {
         return new Use(path, kind);
     }
 
+    private Impl convertImpl(org.key_project.rusty.parser.hir.item.Impl impl) {
+        var selfTy = convertHirTy(impl.selfTy());
+        var items = Arrays.stream(impl.items()).map(this::convertImplItem)
+                .collect(ImmutableList.collector());
+        return new Impl(selfTy, items);
+    }
+
+    private ImplItem convertImplItem(org.key_project.rusty.parser.hir.item.ImplItem item) {
+        return switch (item.kind()) {
+            case org.key_project.rusty.parser.hir.item.ImplItemKind.Fn fn -> {
+                // yield new ImplFunction();
+                yield null;
+            }
+            default -> throw new IllegalArgumentException("Unknown impl item kind: " + item.kind());
+        };
+    }
+
     private Function convertFn(Fn fn, LocalDefId id) {
         var ident = fn.ident().name();
         var name = new Name(ident);

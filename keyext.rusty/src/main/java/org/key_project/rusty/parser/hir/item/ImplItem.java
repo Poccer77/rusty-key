@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later */
 package org.key_project.rusty.parser.hir.item;
 
+import org.key_project.rusty.parser.hir.Ident;
+import org.key_project.rusty.parser.hir.OwnerId;
+import org.key_project.rusty.parser.hir.Span;
+
 public record ImplItem(
         Ident ident,
         OwnerId ownerId,

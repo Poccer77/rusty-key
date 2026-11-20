@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later */
 package org.key_project.rusty.parser.hir.item;
 
+import org.key_project.rusty.parser.hir.TraitRef;
+
 public record TraitImplHeader(TraitRef traitRef) {
 
 }

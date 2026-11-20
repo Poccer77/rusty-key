@@ -4,10 +4,14 @@
  * SPDX-License-Identifier: GPL-2.0-or-later */
 package org.key_project.rusty.parser.hir.item;
 
+import org.key_project.rusty.parser.hir.hirty.HirTy;
+
+import org.jspecify.annotations.Nullable;
+
 public record Impl(
         Generics generics,
         @Nullable TraitImplHeader ofTrait,
-        Ty selfTy,
-        ImplItem[] items) {
+        HirTy selfTy,
+        ImplItem[] items) implements ItemKind {
 
 }

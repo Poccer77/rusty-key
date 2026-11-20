@@ -6,9 +6,11 @@ package org.key_project.rusty.parser.hir.item;
 
 import org.key_project.rusty.parser.hir.HirAdapter;
 
+import org.jspecify.annotations.Nullable;
+
 public interface ImplItemKind {
 
-    record Fn(FnSig sig, Body body) {
+    record Fn(FnSig sig, Body body) implements ImplItemKind {
     }
 
     class Adapter extends HirAdapter<ImplItemKind> {

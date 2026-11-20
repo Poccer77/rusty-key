@@ -1,0 +1,37 @@
+/* This file is part of KeY - https://key-project.org
+ * KeY is licensed under the GNU General Public License Version 2, 
+ * or (at your option) any later version.
+ * SPDX-License-Identifier: GPL-2.0-or-later */
+package org.key_project.rusty.ast;
+
+import org.key_project.logic.SyntaxElement;
+import org.key_project.rusty.ast.ty.RustType;
+import org.key_project.rusty.ast.visitor.Visitor;
+import org.key_project.util.collection.ImmutableList;
+
+import org.jspecify.annotations.NonNull;
+
+public class Impl implements Item {
+    private final RustType selfTy;
+    private final ImmutableList<ImplItem> items;
+
+    public Impl(RustType selfTy, ImmutableList<ImplItem> items) {
+        this.selfTy = selfTy;
+        this.items = items;
+    }
+
+    @Override
+    public void visit(Visitor v) {
+
+    }
+
+    @Override
+    public @NonNull SyntaxElement getChild(int n) {
+        return null;
+    }
+
+    @Override
+    public int getChildCount() {
+        return 0;
+    }
+}

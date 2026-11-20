@@ -22,7 +22,7 @@ import org.key_project.util.collection.ImmutableList;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public final class Function implements Item, Named {
+public class Function implements Item, Named {
     private final Name name;
     private final ImplicitSelfKind selfKind;
     private ImmutableList<FunctionParam> params;
