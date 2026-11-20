@@ -599,7 +599,7 @@ public class TacletGenerator {
             ((ProgramMethod) target).getName(), sig, kjt);
 
         final MethodBodyStatement mbs = new MethodBodyStatement(targetImpl, selfProgSV,
-            resultProgSV, ImmutableList.fromArray(paramProgSVs));
+            resultProgSV, ImmutableList.of(paramProgSVs));
         final JavaBlock findBlock = JavaBlock.createJavaBlock(new ContextStatementBlock(mbs, null));
 
         final var modalitySV =
@@ -742,7 +742,8 @@ public class TacletGenerator {
     }
 
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({ "unused", "unchecked", "varargs" }) // the parameterized pair varargs are
+    // only enumerated, never stored or exposed, so no heap pollution can occur
     private TermAndBoundVarPair createSchemaTerm(JTerm term, TermServices services,
             Pair<LocationVariable, JOperatorSV>... varPairs) {
         ImmutableList<LocationVariable> progVars = ImmutableList.nil();
@@ -902,7 +903,7 @@ public class TacletGenerator {
             newTerm = t;
         } else {
             newTerm = services.getTermBuilder().tf().createTerm(t.op(), newSubs,
-                ImmutableList.fromArray(newBoundVars), null);
+                ImmutableList.of(newBoundVars), null);
         }
 
         return new TermAndBoundVarPair(newTerm, svs);

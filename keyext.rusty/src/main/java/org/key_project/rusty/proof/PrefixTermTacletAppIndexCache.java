@@ -13,7 +13,6 @@ import org.key_project.util.collection.ImmutableList;
 /// of bound variables. This class simply stores a <code>IList<QuantifiableVariable></code> and
 /// offers a couple of access functions to this list.
 abstract class PrefixTermTacletAppIndexCache implements ITermTacletAppIndexCache {
-
     private final ImmutableList<QuantifiableVariable> prefix;
 
     protected PrefixTermTacletAppIndexCache(ImmutableList<QuantifiableVariable> prefix) {

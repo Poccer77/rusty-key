@@ -6,22 +6,27 @@ package org.key_project.rusty;
 
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.key_project.logic.Term;
 import org.key_project.logic.op.Operator;
 import org.key_project.prover.caches.AssumesInstantiationCachePool;
 import org.key_project.prover.proof.SessionCaches;
+import org.key_project.prover.rules.Taclet;
 import org.key_project.prover.rules.instantiation.caches.AssumesFormulaInstantiationCache;
+import org.key_project.prover.sequent.SequentFormula;
+import org.key_project.prover.strategy.costbased.feature.helper.arith.Monomial;
+import org.key_project.prover.strategy.costbased.feature.helper.arith.Polynomial;
 import org.key_project.rusty.proof.Node;
 import org.key_project.rusty.proof.PrefixTermTacletAppIndexCacheImpl.CacheKey;
 import org.key_project.rusty.proof.TermTacletAppIndex;
-import org.key_project.rusty.rule.metaconstruct.arith.Monomial;
-import org.key_project.rusty.rule.metaconstruct.arith.Polynomial;
+import org.key_project.rusty.strategy.CostReuse;
 import org.key_project.rusty.strategy.feature.AbstractBetaFeature.TermInfo;
 import org.key_project.rusty.strategy.feature.AppliedRuleAppsNameCache;
 import org.key_project.rusty.strategy.quantifierHeuristics.Metavariable;
 import org.key_project.rusty.strategy.quantifierHeuristics.TriggersSet;
 import org.key_project.util.ConcurrentLruCache;
+import org.key_project.util.GenerationalCache;
 import org.key_project.util.collection.ImmutableSet;
 import org.key_project.util.collection.Pair;
 
@@ -81,13 +86,22 @@ public class ServiceCaches implements SessionCaches {
         new ConcurrentLruCache<>(MAX_TERM_TACLET_APP_INDEX_ENTRIES);
 
     /// Caches used by HandleArith to cache proof results
-    private final ConcurrentLruCache<@NonNull Term, @NonNull Term> provedByArithFstCache =
-        new ConcurrentLruCache<>(5000);
-    private final ConcurrentLruCache<@NonNull Pair<@NonNull Term, @NonNull Term>, @NonNull Term> provedByArithSndCache =
-        new ConcurrentLruCache<>(5000);
+    private final GenerationalCache<@NonNull Term, @NonNull Term> provedByArithFstCache =
+        new GenerationalCache<>(5000);
+    private final GenerationalCache<@NonNull Pair<@NonNull Term, @NonNull Term>, @NonNull Term> provedByArithSndCache =
+        new GenerationalCache<>(5000);
 
-    private final ConcurrentLruCache<@NonNull Term, @NonNull Polynomial> polynomialCache =
-        new ConcurrentLruCache<>(2000);
+    /// Per-formula operator-occurrence summary for the quantifier instantiation tie-break (which
+    /// operators occur in a sequent formula, and which at proving polarity). A sequent step
+    /// replaces few formulas, and the [SequentFormula] objects
+    /// are immutable and shared across the sequents of a branch, so the summary is memoised per
+    /// formula rather than recomputed per sequent. The value is opaque here (an
+    /// `Instantiation.OccInfo`) to keep this package independent of the strategy package.
+    private final Map<SequentFormula, Object> formulaOccurrenceCache =
+        new ConcurrentLruCache<>(10000);
+
+    private final GenerationalCache<@NonNull Term, @NonNull Polynomial> polynomialCache =
+        new GenerationalCache<>(2000);
     private ConcurrentLruCache<@NonNull Term, @NonNull ImmutableSet<@NonNull Metavariable>> mvCache =
         new ConcurrentLruCache<>(2000);
     private final AssumesInstantiationCachePool<Node> assumesInstantiationCache =
@@ -99,8 +113,8 @@ public class ServiceCaches implements SessionCaches {
         return monomialCache;
     }
 
-    private final ConcurrentLruCache<@NonNull Term, @NonNull Term> formattedTermCache =
-        new ConcurrentLruCache<>(5000);
+    private final GenerationalCache<@NonNull Term, @NonNull Term> formattedTermCache =
+        new GenerationalCache<>(5000);
 
     private final ConcurrentLruCache<@NonNull Term, @NonNull TermInfo> betaCandidates =
         new ConcurrentLruCache<>(1000);
@@ -113,6 +127,16 @@ public class ServiceCaches implements SessionCaches {
     private final Map<Term, TriggersSet> triggerSetCache =
         new ConcurrentLruCache<>(1000);
 
+    /// Per-proof cache for `CostReuse`'s feature-locality classification (taclet -> its
+    /// reuse-eligibility verdict). Held here, like the other proof-scoped caches, so it is freed
+    /// with
+    /// the proof and never shared between proofs with different taclet options. Values are opaque
+    /// to
+    /// this class (a `CostReuse.Eligibility`, or its ineligible sentinel) to keep this package
+    /// independent of the strategy package.
+    private final Map<Taclet, CostReuse.ConditionalEligibility> costReuseClassificationCache =
+        new ConcurrentHashMap<>();
+
     @Override
     public AssumesFormulaInstantiationCache getAssumesFormulaInstantiationCache() {
         return assumesFormulaInstantiationCache;
@@ -122,19 +146,19 @@ public class ServiceCaches implements SessionCaches {
         return appliedRuleAppsNameCache;
     }
 
-    public ConcurrentLruCache<@NonNull Term, @NonNull Term> getProvedByArithFstCache() {
+    public GenerationalCache<@NonNull Term, @NonNull Term> getProvedByArithFstCache() {
         return provedByArithFstCache;
     }
 
-    public ConcurrentLruCache<@NonNull Term, @NonNull Polynomial> getPolynomialCache() {
+    public GenerationalCache<@NonNull Term, @NonNull Polynomial> getPolynomialCache() {
         return polynomialCache;
     }
 
-    public ConcurrentLruCache<@NonNull Pair<@NonNull Term, @NonNull Term>, @NonNull Term> getProvedByArithSndCache() {
+    public GenerationalCache<@NonNull Pair<@NonNull Term, @NonNull Term>, @NonNull Term> getProvedByArithSndCache() {
         return provedByArithSndCache;
     }
 
-    public ConcurrentLruCache<@NonNull Term, @NonNull Term> getFormattedTermCache() {
+    public GenerationalCache<@NonNull Term, @NonNull Term> getFormattedTermCache() {
         return formattedTermCache;
     }
 
@@ -163,5 +187,13 @@ public class ServiceCaches implements SessionCaches {
     /// @return The cache used by [TermTacletAppIndexCacheSet] instances.
     public Map<CacheKey, TermTacletAppIndex> getTermTacletAppIndexCache() {
         return termTacletAppIndexCache;
+    }
+
+    public Map<Taclet, CostReuse.ConditionalEligibility> getCostReuseClassificationCache() {
+        return costReuseClassificationCache;
+    }
+
+    public Map<SequentFormula, Object> getFormulaOccurrenceCache() {
+        return formulaOccurrenceCache;
     }
 }

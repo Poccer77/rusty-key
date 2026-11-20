@@ -31,12 +31,12 @@ public abstract class JOperatorSV extends JAbstractSortedOperator
 
     protected JOperatorSV(Name name, Sort[] argSorts, Sort sort, boolean isRigid,
             boolean isStrict) {
-        this(name, ImmutableList.fromArray(argSorts), sort, isRigid, isStrict);
+        this(name, ImmutableList.of(argSorts), sort, isRigid, isStrict);
     }
 
 
     protected JOperatorSV(Name name, Sort sort, boolean isRigid, boolean isStrict) {
-        this(name, ImmutableList.nil(), sort, isRigid, isStrict);
+        this(name, ImmutableList.of(), sort, isRigid, isStrict);
     }
 
 

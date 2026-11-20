@@ -158,7 +158,7 @@ public class LightweightSyntacticalReplaceVisitor implements Visitor<Term> {
             }
 
             if (varsChanged) {
-                vBoundVars = ImmutableList.fromArray(newVars);
+                vBoundVars = ImmutableList.of(newVars);
             }
         }
         return vBoundVars;

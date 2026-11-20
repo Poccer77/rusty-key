@@ -13,7 +13,6 @@ import org.key_project.util.collection.ImmutableList;
 import org.key_project.util.parsing.Location;
 import org.key_project.util.parsing.Position;
 
-import org.antlr.v4.runtime.Token;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -24,7 +23,7 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public class PositionedString {
-    private static final ImmutableList<TermLabel> EMPTY_LABEL_LIST = ImmutableList.nil();
+    private static final ImmutableList<TermLabel> EMPTY_LABEL_LIST = ImmutableList.of();
 
     public final String text;
     public final Location location;
@@ -34,7 +33,7 @@ public class PositionedString {
         this.location = Objects.requireNonNull(location);
     }
 
-    public PositionedString(String text, Token t) {
+    public PositionedString(String text, org.antlr.v4.runtime.Token t) {
         this(text, Location.fromToken(t));
     }
 
@@ -50,7 +49,7 @@ public class PositionedString {
      * Returns true, if the position information contains a file name.
      */
     public boolean hasFilename() {
-        return location.getFileURI().isPresent();
+        return location.getFileUri() != null;
     }
 
     public PositionedString prepend(String text) {
@@ -60,7 +59,7 @@ public class PositionedString {
 
     public String toString() {
         return text + " ("
-            + (location.getFileURI().isPresent() ? location.getFileURI().get() + ", " : "")
+            + (location.getFileUri() != null ? location.getFileUri() + ", " : "")
             + location.getPosition() + ")";
     }
 

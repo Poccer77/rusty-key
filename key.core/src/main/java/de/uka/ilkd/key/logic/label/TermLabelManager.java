@@ -565,7 +565,7 @@ public class TermLabelManager {
             return manager.instantiateLabels(state, services, applicationPosInOccurrence,
                 applicationTerm, rule, ruleApp, goal, hint, tacletTerm, newTerm);
         } else {
-            return ImmutableList.nil();
+            return ImmutableList.of();
         }
     }
 
@@ -697,7 +697,7 @@ public class TermLabelManager {
                 modalityTerm, rule, ruleApp, hint, tacletTerm, newTerm, allRulesUpdates, newLabels);
         }
         // Return result
-        return ImmutableList.fromArray(newLabels.toArray(new TermLabel[0]));
+        return ImmutableList.of(newLabels.toArray(new TermLabel[0]));
     }
 
     /**
@@ -1357,7 +1357,7 @@ public class TermLabelManager {
                 }
                 JTerm[] newSubs = newTerm.subs().toArray(new JTerm[newTerm.arity()]);
                 newSubs[childIndex] = newChild;
-                ImmutableList<JTerm> newSubsImmutable = ImmutableList.fromArray(newSubs);
+                ImmutableList<JTerm> newSubsImmutable = ImmutableList.of(newSubs);
 
                 if (!newSubsImmutable.equals(newTerm.subs())
                         || !newLabels.equals(newTerm.getLabels())) {
@@ -2197,7 +2197,7 @@ public class TermLabelManager {
                         kept[k++] = l;
                     }
                 }
-                newLabels = ImmutableList.fromArray(kept);
+                newLabels = ImmutableList.of(kept);
             }
         }
 
@@ -2205,7 +2205,7 @@ public class TermLabelManager {
             return term; // no irrelevant label anywhere in this subtree -> no allocation
         }
         return tf.createTerm(term.op(),
-            newSubs == null ? subs : ImmutableList.fromArray(newSubs),
+            newSubs == null ? subs : ImmutableList.of(newSubs),
             term.boundVars(), newLabels);
     }
 }

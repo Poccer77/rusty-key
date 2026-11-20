@@ -36,7 +36,7 @@ public class LabeledTermImplTest {
             tf.createTerm(Junctor.AND, tf.createTerm(Junctor.TRUE), tf.createTerm(Junctor.FALSE));
 
         ImmutableList<TermLabel> labels =
-            ImmutableList.singleton(ParameterlessTermLabel.ANON_HEAP_LABEL);
+            ImmutableList.of(ParameterlessTermLabel.ANON_HEAP_LABEL);
 
         JTerm labeledTerm = tf.createTerm(Junctor.AND, tf.createTerm(Junctor.TRUE),
             tf.createTerm(Junctor.FALSE), labels);

@@ -86,7 +86,8 @@ public class ClashFreeSubst {
     private JTerm applyOnSubterms(JTerm t) {
         final int arity = t.arity();
         final JTerm[] newSubterms = new JTerm[arity];
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({ "unchecked", "rawtypes" }) // raw new ImmutableList[...] array +
+                                                       // unchecked cast
         final ImmutableList<QuantifiableVariable>[] newBoundVars = new ImmutableList[arity];
         for (int i = 0; i < arity; i++) {
             applyOnSubterm(t, i, newSubterms, newBoundVars);
@@ -107,7 +108,7 @@ public class ClashFreeSubst {
                 new QuantifiableVariable[completeTerm.varsBoundHere(subtermIndex).size()];
             applyOnSubterm(0, completeTerm.varsBoundHere(subtermIndex), nbv, subtermIndex,
                 completeTerm.sub(subtermIndex), newSubterms);
-            newBoundVars[subtermIndex] = ImmutableList.fromArray(nbv);
+            newBoundVars[subtermIndex] = ImmutableList.of(nbv);
         } else {
             newBoundVars[subtermIndex] = completeTerm.varsBoundHere(subtermIndex);
             newSubterms[subtermIndex] = completeTerm.sub(subtermIndex);
@@ -151,7 +152,7 @@ public class ClashFreeSubst {
                 new ClashFreeSubst(qv, tb.var(qv1), tb).applyOnSubterm1(varInd + 1, boundVars,
                     newBoundVars, subInd, subTerm, newSubterms);
                 // then continue recursively, on the result.
-                applyOnSubterm(varInd + 1, ImmutableList.fromArray(newBoundVars),
+                applyOnSubterm(varInd + 1, ImmutableList.of(newBoundVars),
                     newBoundVars, subInd, newSubterms[subInd], newSubterms);
             } else {
                 newBoundVars[varInd] = qv;

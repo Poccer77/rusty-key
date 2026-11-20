@@ -14,10 +14,12 @@ import org.key_project.logic.op.Modifier;
 import org.key_project.logic.op.Operator;
 import org.key_project.logic.op.SortedOperator;
 import org.key_project.logic.sort.Sort;
+import org.key_project.prover.proof.ProofGoal;
 import org.key_project.prover.rules.RuleApp;
 import org.key_project.prover.sequent.PosInOccurrence;
 import org.key_project.prover.strategy.costbased.MutableState;
 import org.key_project.prover.strategy.costbased.TopRuleAppCost;
+import org.key_project.prover.strategy.costbased.feature.WeakStableCost;
 import org.key_project.prover.strategy.costbased.termfeature.TermFeature;
 import org.key_project.prover.strategy.costbased.termgenerator.TermGenerator;
 import org.key_project.rusty.Services;
@@ -28,14 +30,20 @@ import org.key_project.util.collection.ImmutableList;
 
 import org.jspecify.annotations.NonNull;
 
-public abstract class SuperTermGenerator implements TermGenerator<Goal> {
+/// Generates the terms upward a given (usually the find-)position and
+/// allows to iterate over those in order to check e.g. whether the
+/// position is below an update or quantifier.
+///
+/// As it only looks upwards, the computed cost is weak stable
+@WeakStableCost
+public abstract class SuperTermGenerator implements TermGenerator {
     private final TermFeature cond;
 
     protected SuperTermGenerator(TermFeature cond) {
         this.cond = cond;
     }
 
-    public static TermGenerator<Goal> upwards(TermFeature cond, final Services services) {
+    public static TermGenerator upwards(TermFeature cond, final Services services) {
         return new SuperTermGenerator(cond) {
             @Override
             protected Iterator<Term> createIterator(
@@ -45,7 +53,7 @@ public abstract class SuperTermGenerator implements TermGenerator<Goal> {
         };
     }
 
-    public static TermGenerator<Goal> upwardsWithIndex(TermFeature cond, final Services services) {
+    public static TermGenerator upwardsWithIndex(TermFeature cond, final Services services) {
         return new SuperTermWithIndexGenerator(cond) {
             @Override
             protected Iterator<Term> createIterator(
@@ -57,7 +65,7 @@ public abstract class SuperTermGenerator implements TermGenerator<Goal> {
 
     @Override
     public Iterator<Term> generate(RuleApp app, PosInOccurrence pos,
-            Goal goal,
+            ProofGoal<?> goal,
             MutableState mState) {
         return createIterator(pos, mState);
     }
@@ -73,7 +81,8 @@ public abstract class SuperTermGenerator implements TermGenerator<Goal> {
         return !(cond.compute(t, mState, services) instanceof TopRuleAppCost);
     }
 
-    abstract static class SuperTermWithIndexGenerator extends SuperTermGenerator {
+    @WeakStableCost
+    public abstract static class SuperTermWithIndexGenerator extends SuperTermGenerator {
         private Services services;
         private Operator binFunc;
 
@@ -83,10 +92,10 @@ public abstract class SuperTermGenerator implements TermGenerator<Goal> {
 
         @Override
         public Iterator<Term> generate(RuleApp app,
-                PosInOccurrence pos, Goal goal,
+                PosInOccurrence pos, ProofGoal<?> goal,
                 MutableState mState) {
             if (services == null) {
-                services = goal.proof().getServices();
+                services = ((Goal) goal).proof().getServices();
                 final IntLDT numbers = services.getLDTs().getIntLDT();
 
                 binFunc = new SuperTermWithIndexGenerator.SuperTermGeneratedOp(numbers);

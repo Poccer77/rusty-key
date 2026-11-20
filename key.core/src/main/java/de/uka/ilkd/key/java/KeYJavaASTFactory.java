@@ -47,14 +47,14 @@ public abstract class KeYJavaASTFactory {
     /**
      * creates an assignment <code> lhs:=rhs </code>
      */
-    public static Assignment assign(Expression lhs, Expression rhs) {
+    public static Assignment<?> assign(Expression lhs, Expression rhs) {
         return new BinaryAssignment(COPY, lhs, rhs);
     }
 
     /**
      * creates an assignment <code> lhs:=rhs </code>
      */
-    public static Assignment assign(Expression lhs, Expression rhs, PositionInfo posInfo) {
+    public static Assignment<?> assign(Expression lhs, Expression rhs, PositionInfo posInfo) {
         return assign(COPY, new ExtList(new Object[] { lhs, rhs, posInfo }));
     }
 
@@ -64,7 +64,7 @@ public abstract class KeYJavaASTFactory {
      * @param parameters the assignment parameters (variable, expression) as {@link ExtList}
      * @return a new {@link BinaryAssignment} as defined by <code>parameters</code>
      */
-    public static Assignment assign(final ExtList parameters) {
+    public static Assignment<?> assign(final ExtList parameters) {
         return new BinaryAssignment(COPY, parameters);
     }
 
@@ -74,7 +74,7 @@ public abstract class KeYJavaASTFactory {
      * @param parameters the assignment parameters (variable, expression) as {@link ExtList}
      * @return a new {@link BinaryAssignment} as defined by <code>parameters</code>
      */
-    public static Assignment assign(final AssignmentKind assignOp, final ExtList parameters) {
+    public static Assignment<?> assign(final AssignmentKind assignOp, final ExtList parameters) {
         if (assignOp instanceof UnaryAssignment.UnaryAssignmentKind kind) {
             return new UnaryAssignment(kind, parameters);
         } else if (assignOp instanceof BinaryAssignmentKind kind) {
@@ -292,7 +292,8 @@ public abstract class KeYJavaASTFactory {
      *
      * @param left the left operand {@link Expression}
      * @param right the right operand <code>Expression</code>
-     * @return a new {@link LogicalAnd} of <code>left</code> and <code>right</code>
+     * @return a new {@link BinaryOperator} of kind {@link BinaryOperatorKind#LOGICAL_AND} for
+     *         <code>left</code> and <code>right</code>
      */
     public static BinaryOperator logicalAndOperator(final Expression left, final Expression right) {
         return new BinaryOperator(BinaryOperatorKind.LOGICAL_AND, left, right);
@@ -307,7 +308,8 @@ public abstract class KeYJavaASTFactory {
      *
      * @param left the left operand {@link Expression}
      * @param right the right operand {@link Expression}
-     * @return a new {@link LogicalOr} of <code>left</code> and <code>right</code>
+     * @return a new {@link BinaryOperator} of kind {@link BinaryOperatorKind#LOGICAL_OR} for
+     *         <code>left</code> and <code>right</code>
      */
     public static BinaryOperator logicalOrOperator(final Expression left, final Expression right) {
         return new BinaryOperator(BinaryOperatorKind.LOGICAL_OR, left, right);
@@ -677,7 +679,8 @@ public abstract class KeYJavaASTFactory {
      * </pre>
      *
      * @param expression the {@link Expression} to be compared against <code>null</code>
-     * @return a new {@link Equals} that compares <code>expression</code> against <code>null</code>
+     * @return a new {@link BinaryOperator} of kind {@link BinaryOperatorKind#EQUALS} that compares
+     *         <code>expression</code> against <code>null</code>
      */
     public static BinaryOperator equalsNullOperator(final Expression expression) {
         return equalsOperator(expression, NullLiteral.NULL);
@@ -692,7 +695,8 @@ public abstract class KeYJavaASTFactory {
      *
      * @param left the left operand {@link Expression}
      * @param right the right operand <code>Expression</code>
-     * @return a new {@link Equals} of <code>left</code> and <code>right</code>
+     * @return a new {@link BinaryOperator} of kind {@link BinaryOperatorKind#EQUALS} for
+     *         <code>left</code> and <code>right</code>
      */
     public static BinaryOperator equalsOperator(final Expression left, final Expression right) {
         return new BinaryOperator(BinaryOperatorKind.EQUALS, left, right);
@@ -706,7 +710,8 @@ public abstract class KeYJavaASTFactory {
      * </pre>
      *
      * @param operands the operands {@link ExtList}
-     * @return a new {@link Equals} of <code>operands</code>
+     * @return a new {@link BinaryOperator} of kind {@link BinaryOperatorKind#EQUALS} connecting
+     *         <code>operands</code>
      */
     public static BinaryOperator equalsOperator(final ExtList operands) {
         return new BinaryOperator(BinaryOperatorKind.EQUALS, operands);
@@ -753,9 +758,11 @@ public abstract class KeYJavaASTFactory {
 
         Statement[] block = new Statement[b.getStatementCount() + stmnt.length];
         System.arraycopy(stmnt, 0, block, 0, stmnt.length);
-        System.arraycopy(b.getBody().toArray(Statement.class), 0, block, stmnt.length,
-            b.getStatementCount());
-        return new StatementBlock(ImmutableList.fromArray(block));
+        int j = stmnt.length;
+        for (Statement s : b.getBody()) {
+            block[j++] = s;
+        }
+        return new StatementBlock(ImmutableList.of(block));
     }
 
     /**
@@ -1075,7 +1082,8 @@ public abstract class KeYJavaASTFactory {
      *
      * @param left the left operand {@link Expression}
      * @param right the right operand {@link Expression}
-     * @return a new {@link LessThan} that compares <code>left</code> less than <code>right</code>
+     * @return a new {@link BinaryOperator} of kind {@link BinaryOperatorKind#LESS_THAN} that
+     *         compares <code>left</code> less than <code>right</code>
      */
     public static BinaryOperator lessThanOperator(final Expression left, final Expression right) {
         return new BinaryOperator(BinaryOperatorKind.LESS_THAN, left, right);
@@ -1089,7 +1097,8 @@ public abstract class KeYJavaASTFactory {
      * </pre>
      *
      * @param expression the left operand {@link Expression}
-     * @return a new {@link LessThan} that compares <code>expression</code> less than <code>0</code>
+     * @return a new {@link BinaryOperator} of kind {@link BinaryOperatorKind#LESS_THAN} that
+     *         compares <code>expression</code> less than <code>0</code>
      */
     public static BinaryOperator lessThanZeroOperator(final Expression expression) {
         final IntLiteral zeroLiteral = zeroLiteral();
@@ -1130,7 +1139,7 @@ public abstract class KeYJavaASTFactory {
      */
     public static IForUpdates forUpdates(final Expression update) {
 
-        return new ForUpdates(ImmutableList.singleton(update));
+        return new ForUpdates(ImmutableList.of(update));
     }
 
     /**
@@ -1302,7 +1311,7 @@ public abstract class KeYJavaASTFactory {
      * @return a new {@link BinaryAssignment} of <code>array</code> element at <code>index</code> to
      *         <code>variable</code>
      */
-    public static Assignment assignArrayField(final ProgramVariable variable,
+    public static Assignment<?> assignArrayField(final ProgramVariable variable,
             final ReferencePrefix array, final Expression index) {
         final ArrayReference element = arrayFieldAccess(array, index);
 
@@ -1376,7 +1385,7 @@ public abstract class KeYJavaASTFactory {
      */
     public static LocalVariableDeclaration declare(final Modifier modifier,
             final IProgramVariable variable, final Expression init, final TypeReference typeRef) {
-        final ImmutableList<Modifier> modifiers = ImmutableList.singleton(modifier);
+        final ImmutableList<Modifier> modifiers = ImmutableList.of(modifier);
 
         return declare(modifiers, variable, init, typeRef);
     }
@@ -1397,7 +1406,7 @@ public abstract class KeYJavaASTFactory {
      */
     public static LocalVariableDeclaration declare(final Modifier[] modifiers,
             final IProgramVariable variable, final Expression init, final TypeReference typeRef) {
-        final ImmutableList<Modifier> m = ImmutableList.fromArray(modifiers);
+        final ImmutableList<Modifier> m = ImmutableList.of(modifiers);
 
         return declare(m, variable, init, typeRef);
     }
@@ -1556,7 +1565,7 @@ public abstract class KeYJavaASTFactory {
      *         <code>type</code> with arguments <code>args</code>
      */
     public static MethodReference methodCall(final KeYJavaType type, final String name) {
-        final ImmutableList<? extends Expression> args = ImmutableList.nil();
+        final ImmutableList<? extends Expression> args = ImmutableList.of();
 
         return methodCall(type, name, args);
     }
@@ -1574,7 +1583,7 @@ public abstract class KeYJavaASTFactory {
      *         <code>reference</code> with no arguments
      */
     public static MethodReference methodCall(final ReferencePrefix reference, final String name) {
-        final ImmutableList<Expression> args = ImmutableList.nil();
+        final ImmutableList<Expression> args = ImmutableList.of();
 
         return methodCall(reference, name, args);
     }
@@ -1594,7 +1603,7 @@ public abstract class KeYJavaASTFactory {
      */
     public static MethodReference methodCall(final ReferencePrefix reference, final String name,
             final Expression... args) {
-        final ImmutableList<? extends Expression> a = ImmutableList.fromArray(args);
+        final ImmutableList<? extends Expression> a = ImmutableList.of(args);
 
         return methodCall(reference, name, a);
     }
@@ -1614,7 +1623,7 @@ public abstract class KeYJavaASTFactory {
      */
     public static MethodReference methodCall(final ReferencePrefix reference, final MethodName name,
             final Expression... args) {
-        final ImmutableList<Expression> a = ImmutableList.fromArray(args);
+        final ImmutableList<Expression> a = ImmutableList.of(args);
 
         return methodCall(reference, name, a);
     }
@@ -1818,7 +1827,7 @@ public abstract class KeYJavaASTFactory {
             final Expression[] arguments) {
 
         return methodBody(result, reference,
-            method, ImmutableList.fromArray(arguments));
+            method, ImmutableList.of(arguments));
     }
 
     /**
@@ -2129,7 +2138,8 @@ public abstract class KeYJavaASTFactory {
      * </pre>
      *
      * @param operands the operands {@link ExtList}
-     * @return a new {@link NotEquals} of <code>operands</code>
+     * @return a new {@link BinaryOperator} of kind {@link BinaryOperatorKind#NOT_EQUALS} connecting
+     *         <code>operands</code>
      */
     public static BinaryOperator notEqualsOperator(final ExtList operands) {
         return new BinaryOperator(BinaryOperatorKind.NOT_EQUALS, operands);
@@ -2376,7 +2386,7 @@ public abstract class KeYJavaASTFactory {
      *
      * @param type the base {@link KeYJavaType}
      * @param dimensions the number of dimensions
-     * @param annotations the {@link ImmutableList} of {@link Annotation}s
+     * @param annotations the {@link ImmutableList} of {@link AnnotationExpression}s
      * @return a new {@link TypeRef} for <code>dimensions</code> dimensions of <code>type</code>
      */
     public static TypeRef typeRef(final KeYJavaType type, final int dimensions,

@@ -434,7 +434,7 @@ public class TestTermLabelManager {
         JTerm update = TB.label(TB.elementary(TB.var(heap), TB.var(heap)),
             new ParameterlessTermLabel(new Name("UPDATE")));
         JTerm updateApp = TB.apply(update, modality,
-            ImmutableList.singleton(new ParameterlessTermLabel(new Name("UPDATE-APPLICATION"))));
+            ImmutableList.of(new ParameterlessTermLabel(new Name("UPDATE-APPLICATION"))));
         PosInOccurrence pos =
             new PosInOccurrence(new SequentFormula(updateApp), PosInTerm.getTopLevel(), true);
         JTerm taclet = TB.tt();
@@ -482,7 +482,7 @@ public class TestTermLabelManager {
         PosInOccurrence pos = createTestPosInOccurrence(services);
         Rule rule = new DummyRule("rule");
         JTerm taclet = services.getTermBuilder().label(services.getTermBuilder().tt(),
-            ImmutableList.singleton(new ParameterlessTermLabel(new Name("TACLET"))));
+            ImmutableList.of(new ParameterlessTermLabel(new Name("TACLET"))));
         ImmutableList<TermLabel> labels = TermLabelManager.instantiateLabels(new TermLabelState(),
             services, pos, rule, null, null, null, taclet, null);
         assertNotNull(labels);
@@ -589,6 +589,8 @@ public class TestTermLabelManager {
         assertSame(manager, managerAgain);
     }
 
+    // the anonymous JavaProfile below overrides the generic Profile hook methods with raw types
+    @SuppressWarnings("unchecked")
     protected InitConfig createTestServices(final TermLabelPolicy applicationTermPolicy,
             final TermLabelPolicy modalityTermPolicy, final ChildTermLabelPolicy directChildPolicy,
             final ChildTermLabelPolicy childAndGrandchildPolicy, final TermLabelUpdate update,
@@ -843,6 +845,9 @@ public class TestTermLabelManager {
         }
     }
 
+    // raw-type handling of the generic Rule interface; getExecutor() overrides
+    // <G>RuleExecutor<G>getExecutor() with a concrete goal type
+    @SuppressWarnings("unchecked")
     private static class DummyRule implements Rule {
         private final String name;
 

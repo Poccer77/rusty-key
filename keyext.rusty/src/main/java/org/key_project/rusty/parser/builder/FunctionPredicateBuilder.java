@@ -125,10 +125,6 @@ public class FunctionPredicateBuilder extends DefaultBuilder {
         boolean rigid = ctx.NON_RIGID() == null;
         String pred_name = accept(ctx.funcpred_name());
         List<Boolean> whereToBind = accept(ctx.where_to_bind());
-        List<Sort> argSorts = accept(ctx.arg_sorts());
-        if (whereToBind != null && whereToBind.size() != argSorts.size()) {
-            semanticError(ctx, "Where-to-bind list must have same length as argument list");
-        }
 
         var sorts = new Namespace<>(nss.sorts());
         var consts = new Namespace<>(nss.functions());
@@ -147,19 +143,31 @@ public class FunctionPredicateBuilder extends DefaultBuilder {
 
         return withSortAndConsts(sorts, consts, () -> {
             assert pred_name != null;
-
+            List<Sort> argSorts = accept(ctx.arg_sorts());
             assert argSorts != null;
-            Function p = new RFunction(new Name(pred_name), RustyDLTheory.FORMULA,
-                ImmutableList.fromArray(argSorts.toArray(new Sort[0])),
-                whereToBind == null ? null
-                        : ImmutableList.fromArray(whereToBind.toArray(new Boolean[0])),
-                false, rigid, Function.FunctionKind.ORDINARY, -1);
+            if (whereToBind != null && whereToBind.size() != argSorts.size()) {
+                semanticError(ctx, "Where-to-bind list must have same length as argument list");
+            }
+            if (genericParameters == null) {
+                Function p = new RFunction(new Name(pred_name), RustyDLTheory.FORMULA,
+                    ImmutableList.fromList(argSorts),
+                    whereToBind == null ? null : ImmutableList.fromList(whereToBind), false, rigid,
+                    Function.FunctionKind.ORDINARY, -1);
 
-            if (lookup(p.name()) == null) {
-                functions().parent().add(p);
+                if (lookup(p.name()) == null) {
+                    functions().parent().add(p);
+                } else {
+                    // weigl: agreement on KaKeY meeting: this should be an error.
+                    semanticError(ctx, "Predicate '" + p.name() + "' is already defined!");
+                }
             } else {
-                // weigl: agreement on KaKeY meeting: this should be an error.
-                semanticError(ctx, "Predicate '" + p.name() + "' is already defined!");
+                var d = new ParametricFunctionDecl(new Name(pred_name),
+                    ImmutableList.fromList(genericParameters),
+                    ImmutableList.fromList(argSorts),
+                    RustyDLTheory.FORMULA, whereToBind == null ? null
+                            : ImmutableList.fromList(whereToBind),
+                    false, rigid, false);
+                nss.parametricFunctions().add(d);
             }
             return null;
         });
@@ -215,9 +223,9 @@ public class FunctionPredicateBuilder extends DefaultBuilder {
                 Sort[] sortsArray = argSorts.toArray(new Sort[0]);
                 ImmutableList<Boolean> whereToBind1 =
                     whereToBind == null ? null
-                            : ImmutableList.fromArray(whereToBind.toArray(new Boolean[0]));
+                            : ImmutableList.of(whereToBind.toArray(new Boolean[0]));
                 if (genericParameters == null)
-                    f = new RFunction(name, retSort, ImmutableList.fromArray(sortsArray),
+                    f = new RFunction(name, retSort, ImmutableList.of(sortsArray),
                         whereToBind1, unique, rigid, Function.FunctionKind.ORDINARY, -1);
                 else {
                     var d = new ParametricFunctionDecl(name,

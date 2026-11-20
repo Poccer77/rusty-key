@@ -5,12 +5,10 @@
 package org.key_project.rusty.strategy;
 
 import org.key_project.prover.indexing.FormulaTag;
-import org.key_project.prover.proof.ProofGoal;
 import org.key_project.prover.rules.RuleApp;
 import org.key_project.prover.sequent.PosInOccurrence;
 import org.key_project.prover.strategy.costbased.RuleAppCost;
 import org.key_project.prover.strategy.costbased.TopRuleAppCost;
-import org.key_project.prover.strategy.costbased.appcontainer.RuleAppContainer;
 import org.key_project.rusty.proof.Goal;
 import org.key_project.rusty.rule.BuiltInRule;
 import org.key_project.rusty.rule.IBuiltInRuleApp;
@@ -18,21 +16,22 @@ import org.key_project.util.collection.ImmutableList;
 
 /// Instances of this class are immutable
 public class BuiltInRuleAppContainer extends RuleAppContainer {
-    /// The position of the rule app in two different representations: <code>positionTag</code>
+    /// The position of the rule app in two different representations: `positionTag`
     /// denotes the concerned formula and survives modifications of the sequent and of parts of the
-    /// formula, and <code>applicationPosition</code> is the original position for which the rule
-    /// app
+    /// formula, and `applicationPosition` is the original position for which the rule app
     /// was created
     private final FormulaTag positionTag;
     private final PosInOccurrence applicationPosition;
 
     private final IBuiltInRuleApp bir;
 
+
+
     // -------------------------------------------------------------------------
     // constructors
     // -------------------------------------------------------------------------
 
-    public BuiltInRuleAppContainer(IBuiltInRuleApp bir,
+    private BuiltInRuleAppContainer(IBuiltInRuleApp bir,
             PosInOccurrence pio, RuleAppCost cost,
             Goal goal) {
         super(bir, cost);
@@ -41,6 +40,8 @@ public class BuiltInRuleAppContainer extends RuleAppContainer {
         this.bir = bir;
         assert !(pio != null && positionTag == null) : "Formula " + pio + " does not exist";
     }
+
+
 
     // -------------------------------------------------------------------------
     // internal methods
@@ -63,6 +64,7 @@ public class BuiltInRuleAppContainer extends RuleAppContainer {
         }
     }
 
+
     /// Copied from FindTaclet.
     private PosInOccurrence getPosInOccurrence(Goal p_goal) {
         final PosInOccurrence topPos =
@@ -73,6 +75,8 @@ public class BuiltInRuleAppContainer extends RuleAppContainer {
         return applicationPosition.replaceSequentFormula(topPos.sequentFormula());
     }
 
+
+
     // -------------------------------------------------------------------------
     // public interface
     // -------------------------------------------------------------------------
@@ -81,17 +85,36 @@ public class BuiltInRuleAppContainer extends RuleAppContainer {
     ///
     /// @return container for the currently applicable BuiltInRuleApp, the cost may be an instance
     /// of
-    /// <code>TopRuleAppCost</code>.
+    /// `TopRuleAppCost`.
     static RuleAppContainer createAppContainer(IBuiltInRuleApp bir,
             PosInOccurrence pio,
             Goal goal) {
-        final RuleAppCost cost = goal.getGoalStrategy().computeCost(bir, pio, goal);
+        final RuleAppCost cost =
+            withAge(goal.getGoalStrategy().computeCost(bir, pio, goal), goal);
         return new BuiltInRuleAppContainer(bir, pio, cost, goal);
     }
 
+    /// Create container for RuleApp.
+    ///
+    /// @return container for the currently applicable BuiltInRuleApp, the cost may be an instance
+    /// of
+    /// `TopRuleAppCost`.
+    static ImmutableList<RuleAppContainer> createInitialAppContainers(
+            ImmutableList<IBuiltInRuleApp> birs, PosInOccurrence pio,
+            Goal goal) {
+        ImmutableList<RuleAppContainer> result = ImmutableList.nil();
+
+        for (IBuiltInRuleApp bir : birs) {
+            result = result.prepend(createAppContainer(bir, pio, goal));
+        }
+
+        return result;
+    }
+
+
+
     @Override
-    public ImmutableList<RuleAppContainer> createFurtherApps(ProofGoal<?> p_goal) {
-        var goal = (Goal) p_goal;
+    public ImmutableList<RuleAppContainer> createFurtherApps(Goal goal) {
         if (!isStillApplicable(goal)) {
             return ImmutableList.nil();
         }
@@ -102,12 +125,12 @@ public class BuiltInRuleAppContainer extends RuleAppContainer {
         if (container.getCost() instanceof TopRuleAppCost) {
             return ImmutableList.nil();
         }
-        return ImmutableList.singleton(container);
+        return ImmutableList.<RuleAppContainer>singleton(container);
     }
 
+
     @Override
-    public RuleApp completeRuleApp(ProofGoal<?> p_goal) {
-        var goal = (Goal) p_goal;
+    public RuleApp completeRuleApp(Goal goal) {
         if (!isStillApplicable(goal)) {
             return null;
         }

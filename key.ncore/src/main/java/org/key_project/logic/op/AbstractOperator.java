@@ -8,6 +8,7 @@ import org.key_project.logic.Name;
 import org.key_project.logic.Term;
 import org.key_project.logic.TermCreationException;
 import org.key_project.util.collection.ImmutableList;
+import org.key_project.util.collection.ImmutableListArray;
 
 import org.jspecify.annotations.Nullable;
 
@@ -15,7 +16,7 @@ import org.jspecify.annotations.Nullable;
 public abstract class AbstractOperator implements Operator {
     private final Name name;
     private final int arity;
-    private final @Nullable ImmutableList<Boolean> whereToBind;
+    private final @Nullable ImmutableListArray<Boolean> whereToBind;
     private final Modifier modifier;
 
     protected AbstractOperator(Name name, int arity,
@@ -25,7 +26,7 @@ public abstract class AbstractOperator implements Operator {
         assert whereToBind == null || whereToBind.size() == arity;
         this.name = name;
         this.arity = arity;
-        this.whereToBind = whereToBind;
+        this.whereToBind = whereToBind == null ? null : ImmutableList.asArray(whereToBind);
         this.modifier = modifier;
     }
 
@@ -35,7 +36,7 @@ public abstract class AbstractOperator implements Operator {
     }
 
     protected AbstractOperator(Name name, int arity, Boolean[] whereToBind, boolean isRigid) {
-        this(name, arity, ImmutableList.fromArray(whereToBind), isRigid);
+        this(name, arity, ImmutableList.ofFixedSize(whereToBind), isRigid);
     }
 
     protected AbstractOperator(Name name, int arity, boolean isRigid) {

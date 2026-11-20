@@ -62,7 +62,7 @@ public class AssumesFormulaInstSeq
             --i;
         }
 
-        return ImmutableList.fromArray(assumesInstFromSeq);
+        return ImmutableList.of(assumesInstFromSeq);
     }
 
     /// Retrieves a list with all formulas of a given semi-sequent

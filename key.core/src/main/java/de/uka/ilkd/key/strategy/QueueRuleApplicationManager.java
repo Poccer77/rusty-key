@@ -24,7 +24,6 @@ import org.key_project.prover.strategy.RuleApplicationManager;
 import org.key_project.prover.strategy.costbased.MutableState;
 import org.key_project.prover.strategy.costbased.RuleAppCost;
 import org.key_project.prover.strategy.costbased.TopRuleAppCost;
-import org.key_project.prover.strategy.costbased.appcontainer.RuleAppContainer;
 import org.key_project.prover.strategy.costbased.feature.Feature;
 import org.key_project.util.collection.ImmutableHeap;
 import org.key_project.util.collection.ImmutableLeftistHeap;
@@ -40,7 +39,7 @@ import org.jspecify.annotations.Nullable;
  * {@link #next()}. This operation will remove the element from the queue. The priority of a given
  * {@link RuleApp} corresponds to its {@link RuleAppCost}. A {@link RuleApp} can be equipped with a
  * {@link RuleAppCost} by converting it into a {@link RuleAppContainer}. The cost of a
- * {@link RuleApp} is computed according to a given {@link Strategy} (see
+ * {@link RuleApp} is computed according to a given {@link JavaStrategy} (see
  * {@link Feature#computeCost(RuleApp, PosInOccurrence, ProofGoal, MutableState)}).
  *
  * <h2>Why the set-aside state of this class belongs to one goal only</h2>
@@ -133,7 +132,7 @@ public class QueueRuleApplicationManager implements RuleApplicationManager<Goal>
         previousMinimum = null;
         parking = new ParkedBases();
         if (goal != null) {
-            goal.proof().getServices().getCaches().getAssumesInstantiationCachePool().releaseAll();
+            goal.proof().getServices().getCaches().getAssumesInstantiationCache().releaseAll();
         }
         clearNextRuleApp();
     }
@@ -507,8 +506,9 @@ public class QueueRuleApplicationManager implements RuleApplicationManager<Goal>
     }
 
     @Override
+    @SuppressWarnings("unchecked") // clone() returns Object; the clone is a
+    // QueueRuleApplicationManager
     public RuleApplicationManager<Goal> copy() {
-        // noinspection unchecked
         return (RuleApplicationManager<Goal>) clone();
     }
 

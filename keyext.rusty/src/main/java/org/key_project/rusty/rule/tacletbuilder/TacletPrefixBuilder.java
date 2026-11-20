@@ -63,7 +63,6 @@ public class TacletPrefixBuilder {
             SchemaVariable v = it.next();
             if (v == sv) {
                 result -= 1;
-                break;
             }
         }
         return Math.max(0, result);
@@ -78,7 +77,7 @@ public class TacletPrefixBuilder {
             if (sv instanceof TermSV || sv instanceof FormulaSV || sv instanceof UpdateSV) {
                 int numberOfBoundVars = removeNoFreeVarIn(sv);
                 TacletPrefix prefix = (TacletPrefix) prefixMap.get(sv);
-                if (prefix == null || prefix.prefixLength() == numberOfBoundVars) {
+                if (prefix == null || prefix.prefixLength() <= numberOfBoundVars) {
                     setPrefixOfOccurrence(sv, numberOfBoundVars);
                 } else {
                     throw new TacletPrefixBuilder.InvalidPrefixException(

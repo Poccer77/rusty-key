@@ -23,10 +23,11 @@ import org.key_project.util.collection.ImmutableList;
  * Replaces a declaration of multiple variables by two variable declarations where the first one
  * declares a single variable and the second one the remaining variables.
  */
+@TransformerMeta(name = "#resolveMultipleVarDecl")
 public class MultipleVarDecl extends ProgramTransformer {
 
     public MultipleVarDecl(SchemaVariable sv) {
-        super(new Name("multiple-var-decl"), (ProgramSV) sv);
+        super(new Name("#resolveMultipleVarDecl"), (ProgramSV) sv);
     }
 
     @Override
@@ -54,4 +55,9 @@ public class MultipleVarDecl extends ProgramTransformer {
             "Meta-construct MultipleVarDecl could " + "not handle program element " + pe);
     }
 
+
+    @Override
+    public ImmutableList<ProgramElement> getArguments() {
+        return ImmutableList.of(body());
+    }
 }

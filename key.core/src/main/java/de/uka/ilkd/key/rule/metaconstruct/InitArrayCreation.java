@@ -43,14 +43,21 @@ import org.key_project.util.collection.ImmutableList;
  *
  * This meta construct delivers the creation expression
  */
+@TransformerMeta(name = "#initArrayCreation")
 public class InitArrayCreation extends InitArray {
 
     private final SchemaVariable newObjectSV;
     private final static String createArrayName = "$createArray";
 
     public InitArrayCreation(SchemaVariable newObjectSV, ProgramElement newExpr) {
-        super("init-array-creation", newExpr);
+        super("#initArrayCreation", newExpr);
         this.newObjectSV = newObjectSV;
+    }
+
+    @Override
+    public ImmutableList<ProgramElement> getArguments() {
+        return newObjectSV == null ? ImmutableList.of(body())
+                : ImmutableList.of((ProgramElement) newObjectSV, body());
     }
 
     /**

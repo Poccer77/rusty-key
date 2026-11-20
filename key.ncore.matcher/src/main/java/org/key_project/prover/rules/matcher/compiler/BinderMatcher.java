@@ -19,7 +19,7 @@ import org.key_project.util.collection.ImmutableList;
  *
  * <p>
  * The match-plan framework owns the <em>scaffolding</em>: it binds the pattern's bound variables
- * before matching the operator and subterms and unbinds them afterward, on both back-ends. A
+ * before matching the operator and subterms and unbinds them afterwards, on both back-ends. A
  * language plugs in the two operations here. The {@linkplain #binder(ImmutableList) binder} is an
  * element-based instruction (it reads the source element's own bound variables), so both back-ends
  * apply it as it is; {@link #unbind} reads no element at all (it only transforms the match

@@ -486,7 +486,7 @@ public class TermBuilder {
     // return tf.createTerm(modality, new Term[] { t }, null, t.javaBlock());
     // }
     //
-    // public Term prog(Modality modality, Term t, ImmutableArray<TermLabel> labels) {
+    // public Term prog(Modality modality, Term t, ImmutableList<TermLabel> labels) {
     // return tf.createTerm(modality, new Term[] { t }, null, t.javaBlock(), labels);
     // }
 
@@ -517,7 +517,7 @@ public class TermBuilder {
     public JTerm ifEx(QuantifiableVariable qv, JTerm cond, JTerm _then, JTerm _else) {
         return tf.createTerm(IfExThenElse.IF_EX_THEN_ELSE,
             ImmutableList.of(cond, _then, _else),
-            ImmutableList.singleton(qv), null);
+            ImmutableList.ofFixedSize(qv), null);
     }
 
     /**
@@ -548,8 +548,8 @@ public class TermBuilder {
     }
 
     public JTerm all(QuantifiableVariable qv, JTerm t) {
-        return tf.createTerm(Quantifier.ALL, ImmutableList.singleton(t),
-            ImmutableList.singleton(qv), null);
+        return tf.createTerm(Quantifier.ALL, ImmutableList.ofFixedSize(t),
+            ImmutableList.ofFixedSize(qv), null);
     }
 
     public JTerm all(Iterable<QuantifiableVariable> qvs, JTerm t) {
@@ -577,8 +577,8 @@ public class TermBuilder {
     }
 
     public JTerm ex(QuantifiableVariable qv, JTerm t) {
-        return tf.createTerm(Quantifier.EX, ImmutableList.singleton(t),
-            ImmutableList.singleton(qv), null);
+        return tf.createTerm(Quantifier.EX, ImmutableList.ofFixedSize(t),
+            ImmutableList.ofFixedSize(qv), null);
     }
 
     public JTerm ex(Iterable<QuantifiableVariable> qvs, JTerm t) {
@@ -591,7 +591,7 @@ public class TermBuilder {
 
     public JTerm bsum(QuantifiableVariable qv, JTerm a, JTerm b, JTerm t) {
         Function bsum = services.getTypeConverter().getIntegerLDT().getBsum();
-        return func(bsum, new JTerm[] { a, b, t }, ImmutableList.singleton(qv));
+        return func(bsum, new JTerm[] { a, b, t }, ImmutableList.ofFixedSize(qv));
     }
 
     /**
@@ -601,9 +601,9 @@ public class TermBuilder {
         final Function sum = services.getNamespaces().functions().lookup("sum");
         final Iterator<LogicVariable> it = qvs.iterator();
         JTerm res = func(sum, new JTerm[] { convertToBoolean(range), t },
-            ImmutableList.singleton(it.next()));
+            ImmutableList.ofFixedSize(it.next()));
         while (it.hasNext()) {
-            res = func(sum, new JTerm[] { TRUE(), res }, ImmutableList.singleton(it.next()));
+            res = func(sum, new JTerm[] { TRUE(), res }, ImmutableList.ofFixedSize(it.next()));
         }
         return res;
     }
@@ -613,7 +613,7 @@ public class TermBuilder {
      */
     public JTerm bprod(QuantifiableVariable qv, JTerm a, JTerm b, JTerm t, Services services) {
         Function bprod = services.getTypeConverter().getIntegerLDT().getBprod();
-        return func(bprod, new JTerm[] { a, b, t }, ImmutableList.singleton(qv));
+        return func(bprod, new JTerm[] { a, b, t }, ImmutableList.ofFixedSize(qv));
     }
 
     /**
@@ -624,10 +624,10 @@ public class TermBuilder {
         final Function prod = services.getNamespaces().functions().lookup("prod");
         final Iterator<LogicVariable> it = qvs.iterator();
         JTerm res = func(prod, new JTerm[] { convertToBoolean(range), t },
-            ImmutableList.singleton(it.next()));
+            ImmutableList.ofFixedSize(it.next()));
         while (it.hasNext()) {
             res = func(prod, new JTerm[] { TRUE(), res },
-                ImmutableList.singleton(it.next()));
+                ImmutableList.ofFixedSize(it.next()));
         }
         return res;
     }
@@ -640,10 +640,10 @@ public class TermBuilder {
         final Function min = services.getNamespaces().functions().lookup("min");
         final Iterator<? extends QuantifiableVariable> it = qvs.iterator();
         JTerm res = func(min, new JTerm[] { convertToBoolean(range), t },
-            ImmutableList.singleton(it.next()));
+            ImmutableList.ofFixedSize(it.next()));
         while (it.hasNext()) {
             res = func(min, new JTerm[] { TRUE(), res },
-                ImmutableList.singleton(it.next()));
+                ImmutableList.ofFixedSize(it.next()));
         }
         return res;
     }
@@ -656,9 +656,9 @@ public class TermBuilder {
         final Function max = services.getNamespaces().functions().lookup("max");
         final Iterator<? extends QuantifiableVariable> it = qvs.iterator();
         JTerm res = func(max, new JTerm[] { convertToBoolean(range), t },
-            ImmutableList.singleton(it.next()));
+            ImmutableList.ofFixedSize(it.next()));
         while (it.hasNext()) {
-            res = func(max, new JTerm[] { TRUE(), res }, ImmutableList.singleton(it.next()));
+            res = func(max, new JTerm[] { TRUE(), res }, ImmutableList.ofFixedSize(it.next()));
         }
         return res;
     }
@@ -844,7 +844,7 @@ public class TermBuilder {
     public JTerm subst(SubstOp op, QuantifiableVariable substVar, JTerm substTerm,
             JTerm origTerm) {
         return tf.createTerm(op, ImmutableList.of(substTerm, origTerm),
-            ImmutableList.singleton(substVar), null);
+            ImmutableList.of(substVar), null);
     }
 
     public JTerm subst(QuantifiableVariable substVar, JTerm substTerm, JTerm origTerm) {
@@ -1478,7 +1478,7 @@ public class TermBuilder {
     public JTerm infiniteUnion(QuantifiableVariable[] qvs, JTerm s) {
         final LocSetLDT ldt = services.getTypeConverter().getLocSetLDT();
         return tf.createTerm(ldt.getInfiniteUnion(), new JTerm[] { s },
-            ImmutableList.fromArray(qvs), null);
+            ImmutableList.ofFixedSize(qvs), null);
     }
 
     public JTerm infiniteUnion(QuantifiableVariable[] qvs, JTerm guard, JTerm s) {
@@ -1818,7 +1818,7 @@ public class TermBuilder {
      * @return a labeled term.
      */
     public JTerm addLabelToAllSubs(JTerm term, TermLabel label) {
-        return addLabelToAllSubs(term, ImmutableList.singleton(label));
+        return addLabelToAllSubs(term, ImmutableList.ofFixedSize(label));
     }
 
     /**
@@ -1866,7 +1866,7 @@ public class TermBuilder {
         if (label == null && !term.hasLabels()) {
             return term;
         } else {
-            return addLabel(term, ImmutableList.singleton(label));
+            return addLabel(term, ImmutableList.ofFixedSize(label));
         }
     }
 
@@ -1897,7 +1897,7 @@ public class TermBuilder {
         if (label == null) {
             return term;
         } else {
-            return label(term, ImmutableList.singleton(label));
+            return label(term, ImmutableList.ofFixedSize(label));
         }
     }
 
@@ -2285,7 +2285,7 @@ public class TermBuilder {
 
     public JTerm seqDef(QuantifiableVariable qv, JTerm a, JTerm b, JTerm t) {
         return func(services.getTypeConverter().getSeqLDT().getSeqDef(), new JTerm[] { a, b, t },
-            ImmutableList.singleton(qv));
+            ImmutableList.ofFixedSize(qv));
     }
 
     public JTerm values() {

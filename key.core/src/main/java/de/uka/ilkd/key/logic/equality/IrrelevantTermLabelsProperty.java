@@ -49,6 +49,7 @@ public class IrrelevantTermLabelsProperty implements Property<JTerm> {
      * @see TermLabel#isProofRelevant() isStrategyRelevant
      */
     @Override
+    @SuppressWarnings("unchecked") // the vararg value is never read, so no heap pollution occurs
     public <V> boolean equalsModThisProperty(JTerm term1, JTerm term2, V... v) {
         if (term2 == term1) {
             return true;

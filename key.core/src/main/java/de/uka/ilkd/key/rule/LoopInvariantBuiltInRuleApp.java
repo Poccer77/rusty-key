@@ -134,7 +134,7 @@ public class LoopInvariantBuiltInRuleApp<T extends BuiltInRule>
         Statement last =
             (skipValues || block.getStatementCount() < 2) ? null : block.getStatementAt(1);
         skipValues = skipValues || !JavaAstUtils.isCopyAssignment(last);
-        Assignment assignment = skipValues ? null : ((Assignment) last);
+        Assignment<?> assignment = skipValues ? null : ((Assignment<?>) last);
         ProgramElement lhs = skipValues ? null : assignment.getChildAt(0);
         skipValues = skipValues || !(lhs instanceof ProgramVariable);
         final JTerm valuesVar = skipValues ? null : tb.var((ProgramVariable) lhs);
@@ -167,7 +167,7 @@ public class LoopInvariantBuiltInRuleApp<T extends BuiltInRule>
                     for (int i = 0; i < subs.size(); i++) {
                         newSubs[i] = replace(subs.get(i));
                     }
-                    return tb.tf().createTerm(visited.op(), ImmutableList.fromArray(newSubs),
+                    return tb.tf().createTerm(visited.op(), ImmutableList.of(newSubs),
                         visited.boundVars(), visited.getLabels());
                 }
             }
@@ -198,7 +198,7 @@ public class LoopInvariantBuiltInRuleApp<T extends BuiltInRule>
                     for (int i = 0; i < subs.size(); i++) {
                         newSubs[i] = replace(subs.get(i));
                     }
-                    return tb.tf().createTerm(visited.op(), ImmutableList.fromArray(newSubs),
+                    return tb.tf().createTerm(visited.op(), ImmutableList.of(newSubs),
                         visited.boundVars(), visited.getLabels());
                 }
             }

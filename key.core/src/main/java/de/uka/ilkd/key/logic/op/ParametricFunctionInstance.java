@@ -86,7 +86,7 @@ public class ParametricFunctionInstance extends JFunction {
             argSorts[i] = ParametricSortInstance.instantiate(sort, instMap, services);
         }
 
-        return ImmutableList.fromArray(argSorts);
+        return ImmutableList.of(argSorts);
     }
 
     /// Computes an instantiation mapping for `base`.

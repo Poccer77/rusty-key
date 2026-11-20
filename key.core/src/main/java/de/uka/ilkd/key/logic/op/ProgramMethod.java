@@ -87,7 +87,7 @@ public final class ProgramMethod extends ObserverFunction
             result[i] = md.getParameterDeclarationAt(i).getVariableSpecification()
                     .getProgramVariable().getKeYJavaType();
         }
-        return ImmutableList.fromArray(result);
+        return ImmutableList.of(result);
     }
 
     // -------------------------------------------------------------------------
@@ -266,6 +266,11 @@ public final class ProgramMethod extends ObserverFunction
         }
 
         return method == ipm.getMethodDeclaration();
+    }
+
+    @Override
+    public int hashCode() {
+        return method.hashCode();
     }
 
     @Deprecated

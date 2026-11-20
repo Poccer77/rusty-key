@@ -232,11 +232,11 @@ public final class CreateArrayMethodBuilder extends KeYJavaASTFactory {
 
         body.addLast(local);
         body.addLast(assign(newObject,
-            new MethodReference(ImmutableList.singleton(paramLength),
+            new MethodReference(ImmutableList.of(paramLength),
                 new ProgramElementName(PipelineConstants.IMPLICIT_INSTANCE_ALLOCATE),
                 arrayRef)));
 
-        body.add(new MethodReference(ImmutableList.nil(),
+        body.add(new MethodReference(ImmutableList.of(),
             new ProgramElementName(IMPLICIT_ARRAY_CREATION_HELPER),
             newObject));
 
@@ -286,7 +286,7 @@ public final class CreateArrayMethodBuilder extends KeYJavaASTFactory {
 
         final List<Statement> body = createArray(fields);
 
-        body.add(new MethodReference(ImmutableList.nil(),
+        body.add(new MethodReference(ImmutableList.of(),
             new ProgramElementName(PipelineConstants.IMPLICIT_OBJECT_PREPARE), null));
 
         body.add(

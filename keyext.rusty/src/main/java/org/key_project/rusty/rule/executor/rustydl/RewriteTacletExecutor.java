@@ -9,6 +9,7 @@ import org.key_project.logic.Term;
 import org.key_project.logic.op.QuantifiableVariable;
 import org.key_project.logic.op.SortedOperator;
 import org.key_project.logic.sort.Sort;
+import org.key_project.prover.rules.RuleApp;
 import org.key_project.prover.sequent.PosInOccurrence;
 import org.key_project.prover.sequent.Sequent;
 import org.key_project.prover.sequent.SequentChangeInfo;
@@ -18,7 +19,6 @@ import org.key_project.rusty.logic.RustyDLTheory;
 import org.key_project.rusty.logic.op.IfThenElse;
 import org.key_project.rusty.proof.Goal;
 import org.key_project.rusty.rule.MatchConditions;
-import org.key_project.rusty.rule.RuleApp;
 import org.key_project.rusty.rule.Taclet;
 import org.key_project.rusty.rule.tacletbuilder.RewriteTacletGoalTemplate;
 import org.key_project.rusty.rule.tacletbuilder.TacletGoalTemplate;
@@ -26,7 +26,6 @@ import org.key_project.util.collection.ImmutableList;
 
 public class RewriteTacletExecutor
         extends FindTacletExecutor {
-
     public RewriteTacletExecutor(Taclet taclet) {
         super(taclet);
     }
@@ -46,7 +45,8 @@ public class RewriteTacletExecutor
     @Override
     protected void applyAdd(Sequent add,
             SequentChangeInfo currentSequent, PosInOccurrence whereToAdd, PosInOccurrence posOfFind,
-            MatchConditions matchCond, Goal goal, RuleApp ruleApp, Services services) {
+            MatchConditions matchCond, Goal goal, org.key_project.prover.rules.RuleApp ruleApp,
+            Services services) {
         if (posOfFind.isInAntec()) {
             addToAntec(add.antecedent(),
                 currentSequent,
@@ -66,7 +66,8 @@ public class RewriteTacletExecutor
 
     @Override
     protected void applyReplacewith(TacletGoalTemplate gt, SequentChangeInfo currentSequent,
-            PosInOccurrence posOfFind, MatchConditions matchCond, Goal goal, RuleApp ruleApp,
+            PosInOccurrence posOfFind, MatchConditions matchCond, Goal goal,
+            org.key_project.prover.rules.RuleApp ruleApp,
             Services services) {
         if (gt instanceof RewriteTacletGoalTemplate rwtgt) {
             final SequentFormula cf = applyReplacewithHelper(goal,
@@ -82,7 +83,7 @@ public class RewriteTacletExecutor
 
     private SequentFormula applyReplacewithHelper(Goal goal,
             RewriteTacletGoalTemplate gt, PosInOccurrence posOfFind, Services services,
-            MatchConditions matchCond, RuleApp ruleApp) {
+            MatchConditions matchCond, org.key_project.prover.rules.RuleApp ruleApp) {
         final Term term = posOfFind.sequentFormula().formula();
         final IntIterator it = posOfFind.posInTerm().iterator();
         final Term rwTemplate = gt.replaceWith();
@@ -103,7 +104,7 @@ public class RewriteTacletExecutor
             final int indexOfNextSubTerm = it.next();
 
             final Term[] subs = new Term[term.arity()];
-            System.arraycopy(term.subs().toArray(Term.class), 0, subs, 0, term.arity());
+            System.arraycopy(term.subs().toArray(new Term[0]), 0, subs, 0, term.arity());
 
             final Sort newMaxSort = getMaxSort(term, indexOfNextSubTerm);
             subs[indexOfNextSubTerm] = replace(term.sub(indexOfNextSubTerm), with, posOfFind, it,

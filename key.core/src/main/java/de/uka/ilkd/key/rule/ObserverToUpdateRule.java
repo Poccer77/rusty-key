@@ -16,7 +16,6 @@ import de.uka.ilkd.key.java.ast.reference.*;
 import de.uka.ilkd.key.logic.JTerm;
 import de.uka.ilkd.key.logic.JavaBlock;
 import de.uka.ilkd.key.logic.TermBuilder;
-import de.uka.ilkd.key.logic.TermServices;
 import de.uka.ilkd.key.logic.label.TermLabelManager;
 import de.uka.ilkd.key.logic.label.TermLabelState;
 import de.uka.ilkd.key.logic.op.IObserverFunction;
@@ -30,6 +29,7 @@ import de.uka.ilkd.key.proof.Goal;
 import de.uka.ilkd.key.rule.UseOperationContractRule.Instantiation;
 import de.uka.ilkd.key.util.Union;
 
+import org.key_project.logic.LogicServices;
 import org.key_project.logic.Name;
 import org.key_project.prover.rules.RuleApp;
 import org.key_project.prover.sequent.PosInOccurrence;
@@ -109,8 +109,8 @@ public final class ObserverToUpdateRule implements BuiltInRule {
     }
 
     @Override
-    public IBuiltInRuleApp createApp(PosInOccurrence pos, TermServices services) {
-        return new DefaultBuiltInRuleApp(this, pos);
+    public IBuiltInRuleApp createApp(PosInOccurrence pos, LogicServices services) {
+        return new DefaultBuiltInRuleApp<>(this, pos);
     }
 
     @Override
@@ -273,8 +273,7 @@ public final class ObserverToUpdateRule implements BuiltInRule {
             tb.prog(inst.modality().kind(), postJavaBlock, inst.progPost().sub(0),
                 TermLabelManager.instantiateLabels(termLabelState, services,
                     ruleApp.posInOccurrence(), this, ruleApp, contGoal, "PostModality", null,
-                    tb.tf().createTerm(modality, ImmutableList.singleton(inst.progPost().sub(0)),
-                        null,
+                    tb.tf().createTerm(modality, ImmutableList.of(inst.progPost().sub(0)), null,
                         inst.progPost().getLabels())));
         JTerm lhs = tb.var((ProgramVariable) inst.actualResult());
         JTerm update =
@@ -357,7 +356,7 @@ public final class ObserverToUpdateRule implements BuiltInRule {
 
         // active statement must be reading model field
         final SourceElement activeStatement = JavaTools.getActiveStatement(mainFml.javaBlock());
-        if (!(activeStatement instanceof Assignment ca
+        if (!(activeStatement instanceof Assignment<?> ca
                 && ca.getKind() == BinaryAssignment.BinaryAssignmentKind.COPY)) {
             return null;
         }

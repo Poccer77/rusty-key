@@ -12,10 +12,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import de.uka.ilkd.key.logic.JTerm;
 import de.uka.ilkd.key.logic.label.OriginTermLabel.Origin;
-import de.uka.ilkd.key.proof.*;
+import de.uka.ilkd.key.proof.Node;
 import de.uka.ilkd.key.proof.PrefixTermTacletAppIndexCacheImpl.CacheKey;
-import de.uka.ilkd.key.rule.metaconstruct.arith.Monomial;
-import de.uka.ilkd.key.rule.metaconstruct.arith.Polynomial;
+import de.uka.ilkd.key.proof.Proof;
+import de.uka.ilkd.key.proof.TermTacletAppIndex;
+import de.uka.ilkd.key.proof.TermTacletAppIndexCacheSet;
 import de.uka.ilkd.key.strategy.CostReuse;
 import de.uka.ilkd.key.strategy.feature.AbstractBetaFeature.TermInfo;
 import de.uka.ilkd.key.strategy.feature.AppliedRuleAppsNameCache;
@@ -30,6 +31,8 @@ import org.key_project.prover.rules.Taclet;
 import org.key_project.prover.rules.instantiation.caches.AssumesFormulaInstantiationCache;
 import org.key_project.prover.sequent.PosInOccurrence;
 import org.key_project.prover.sequent.SequentFormula;
+import org.key_project.prover.strategy.costbased.feature.helper.arith.Monomial;
+import org.key_project.prover.strategy.costbased.feature.helper.arith.Polynomial;
 import org.key_project.util.ConcurrentLruCache;
 import org.key_project.util.GenerationalCache;
 import org.key_project.util.collection.ImmutableSet;
@@ -178,8 +181,8 @@ public class ServiceCaches implements SessionCaches {
     private final Map<Node, PosInOccurrence> exhaustiveMacroCache =
         Collections.synchronizedMap(new WeakHashMap<>());
 
-    /** Cache used by the ifinstantiator */
-    private final AssumesInstantiationCachePool<Node> assumesInstantiationCachePool =
+    /** Cache used by the assumes instantiator */
+    private final AssumesInstantiationCachePool<Node> assumesInstantiationCache =
         new AssumesInstantiationCachePool<>();
 
     /** Cache used IfFormulaInstSeq */
@@ -274,8 +277,8 @@ public class ServiceCaches implements SessionCaches {
         return exhaustiveMacroCache;
     }
 
-    public final AssumesInstantiationCachePool<Node> getAssumesInstantiationCachePool() {
-        return assumesInstantiationCachePool;
+    public final AssumesInstantiationCachePool<Node> getAssumesInstantiationCache() {
+        return assumesInstantiationCache;
     }
 
     public final AssumesFormulaInstantiationCache getAssumesFormulaInstantiationCache() {

@@ -132,12 +132,12 @@ public class OpReplacer {
                 changedSubTerm = true;
             }
         }
-        final ImmutableList<QuantifiableVariable> newBoundVars = replaceQuantVars(term.boundVars());
+        final ImmutableList<QuantifiableVariable> newBoundVars =
+            replaceQuantVars(term.boundVars());
 
         final Term result;
         if (newOp != term.op() || changedSubTerm || newBoundVars != term.boundVars()) {
-            result =
-                tf.createTerm(newOp, newSubTerms, newBoundVars);
+            result = tf.createTerm(newOp, newSubTerms, newBoundVars);
         } else {
             result = term;
         }
@@ -157,7 +157,7 @@ public class OpReplacer {
         return result;
     }
 
-    /// Replaces in an ImmutableArray<QuantifiableVariable>.
+    /// Replaces in an ImmutableList<QuantifiableVariable>.
     ///
     /// @param vars the array in which to perform the replacement.
     /// @return the list of transformed variables.
@@ -173,7 +173,7 @@ public class OpReplacer {
                 changed = true;
             }
         }
-        return changed ? ImmutableList.fromArray(result)
+        return changed ? ImmutableList.of(result)
                 : (ImmutableList<QuantifiableVariable>) vars;
     }
 }

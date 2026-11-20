@@ -26,7 +26,7 @@ class LabelCollectionTest {
             paramA,
             paramB,
         };
-        this.collection = new LabelCollection(ImmutableList.fromArray(labels));
+        this.collection = new LabelCollection(ImmutableList.of(labels));
     }
 
 
