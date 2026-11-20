@@ -125,7 +125,7 @@ public class HirConverter {
             rawTypes.put(m.hirId(), m.ty());
         }
         for (var res : crate.res()) {
-            resolutions.put(res.hirId(), res.resolution());
+            resolutions.put(res.hirId(), res.res());
         }
         Crate crate1 = new Crate(convertMod(crate.topMod()));
         for (var fn : fnsToComplete.keySet()) {
@@ -320,7 +320,7 @@ public class HirConverter {
             args[i] = convertExpr(e.args()[i]);
         }
         Optional<Function> fn = Optional.of(null);
-        Optional<DefId> res = resolutions.get(e.hirId).DefId;
+        Optional<DefId> res = resolutions.get(e.hirId).defId;
         if (res.isPresent() && res.krate == 0) {
             fn.of(localFns.get(res.get().index()));
         }
